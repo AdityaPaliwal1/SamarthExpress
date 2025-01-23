@@ -6,6 +6,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const color = require("colors");
 const nodeMailer = require("nodemailer");
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+const path = require("path");
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -93,6 +96,47 @@ app.post("/api/send-email", async (req, res) => {
       res.status(200).json({ message: "Email sent successfully" }); // Return success as JSON
     }
   });
+});
+
+
+// Generate PDF
+app.get('/api/receipt/:trackingId', async (req, res) => {
+  const { trackingId } = req.params;
+
+  // Fetch the parcel details using the trackingId
+  const parcel = await Parcel.findOne({ tracking_id: trackingId });
+
+  if (!parcel) {
+    return res.status(404).send('Parcel not found');
+  }
+
+  // Create a PDF document
+  const doc = new PDFDocument();
+
+  // Set the response headers to indicate a file download
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="receipt-${trackingId}.pdf"`);
+  
+  // Pipe the PDF to the response stream
+  doc.pipe(res);
+
+  // Add content to the PDF
+  doc.fontSize(20).text(`Receipt for Parcel Booking`, { align: 'center' });
+  doc.moveDown();
+  doc.fontSize(12).text(`Tracking ID: ${parcel.tracking_id}`);
+  doc.text(`Sender Name: ${parcel.sender_name}`);
+  doc.text(`Sender Phone: ${parcel.sender_phone}`);
+  doc.text(`Sender Address: ${parcel.sender_address}`);
+  doc.text(`Receiver Name: ${parcel.receiver_name}`);
+  doc.text(`Receiver Phone: ${parcel.receiver_phone}`);
+  doc.text(`Receiver Address: ${parcel.receiver_address}`);
+  doc.text(`Weight: ${parcel.weight} kg`);
+  doc.text(`Declared Value: ₹${parcel.declared_value}`);
+  doc.text(`Description: ${parcel.description}`);
+  doc.text(`Booked Time: ${parcel.created_at}`);
+
+  // Finalize the PDF
+  doc.end();
 });
 
 // Start server

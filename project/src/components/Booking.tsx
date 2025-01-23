@@ -58,6 +58,7 @@ const Booking = () => {
           const parcel = await createParcel(parcelData);
           toast.success(`Booking successful! Your tracking ID is: ${parcel.tracking_id}`);
           setId(parcel.tracking_id);
+          setTrackingId(parcel.tracking_id);
           (e.target as HTMLFormElement).reset();
         } catch (err) {
           toast.error("Failed to create booking. Please try again.");
@@ -326,6 +327,17 @@ const Booking = () => {
                   </div>
                 </div>
               )}
+               {trackingId && (
+              <div className="mt-4">
+                <a
+                  href={`http://localhost:5000/api/receipt/${trackingId}`}
+                  target="_blank"
+                  className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition duration-300"
+                >
+                  Download Receipt
+                </a>
+              </div>
+            )}
             </div>
           </div>
         </div>
