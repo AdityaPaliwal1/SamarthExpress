@@ -1,7 +1,7 @@
 const Parcel = require("../models/Parcel");
 const puppeteer = require("puppeteer");
 const receiptTemplate = require("../views/receiptTemplate");
-
+const { jsPDF } = require("jspdf");
 // Create Parcel
 exports.createParcel = async (req, res) => {
   try {
@@ -38,17 +38,19 @@ exports.generateReceipt = async (req, res) => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setContent(receiptHtml);
+
     const pdfBuffer = await page.pdf();
 
-    res.setHeader("Content-Type", "application/pdf");
+    await browser.close();
+
+    res.setHeader("Content-Type", "application/json");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="receipt-${parcel.sender_name}.pdf"`
+      `attachment; filename="receipt-${parcel.tracking_id}.pdf"`
     );
     res.end(pdfBuffer);
-
-    await browser.close();
   } catch (err) {
+    console.error("Error generating receipt:", err);
     res.status(500).send("Error generating receipt");
   }
 };

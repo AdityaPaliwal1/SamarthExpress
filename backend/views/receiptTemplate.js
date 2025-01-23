@@ -1,4 +1,4 @@
-module.exports = (parcel) => `
+ module.exports = (parcel) => `
 <html>
   <head>
     <style>

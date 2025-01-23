@@ -1,94 +1,94 @@
-import React, { useState } from 'react'
-import { toast } from 'react-toastify';
+import React, { useState } from "react";
+import { toast } from "react-toastify";
 import {
-    Package,
-    Search,
-    MapPin,
-    DollarSign,
-    Weight,
-    Box,
-    Loader2,
-  } from "lucide-react";
+  Package,
+  Search,
+  MapPin,
+  DollarSign,
+  Weight,
+  Box,
+  Loader2,
+} from "lucide-react";
 
 async function createParcel(parcelData: any) {
-    const response = await fetch("http://localhost:5000/api/parcels", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parcelData),
-    });
-    return response.json();
-  }
-  
-  async function getParcelByTrackingId(trackingId: string) {
-    const response = await fetch(
-      `http://localhost:5000/api/parcels/${trackingId}`
-    );
-    return response.json();
-  }
+  const response = await fetch("http://localhost:5000/api/parcels", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(parcelData),
+  });
+  return response.json();
+}
+
+async function getParcelByTrackingId(trackingId: string) {
+  const response = await fetch(
+    `http://localhost:5000/api/parcels/${trackingId}`
+  );
+  return response.json();
+}
 
 const Booking = () => {
+  const [activeTab, setActiveTab] = useState("book");
+  const [trackingId, setTrackingId] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [trackingResult, setTrackingResult] = useState("");
 
-    const [activeTab, setActiveTab] = useState("book");
-    const [trackingId, setTrackingId] = useState("");
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [trackingResult, setTrackingResult] = useState("");
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-
-     const handleBookingSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-    
-        try {
-          const formData = new FormData(e.target as HTMLFormElement);
-          const parcelData = {
-            sender_name: formData.get("sender_name") as string,
-            sender_phone: formData.get("sender_phone") as string,
-            sender_address: formData.get("sender_address") as string,
-            receiver_name: formData.get("receiver_name") as string,
-            receiver_phone: formData.get("receiver_phone") as string,
-            receiver_address: formData.get("receiver_address") as string,
-            weight: Number(formData.get("weight")),
-            declared_value: Number(formData.get("declared_value")),
-            description: formData.get("description") as string,
-          };
-    
-          const parcel = await createParcel(parcelData);
-          toast.success(`Booking successful! Your tracking ID is: ${parcel.tracking_id}`);
-          setTrackingId(parcel.tracking_id);
-          (e.target as HTMLFormElement).reset();
-        } catch (err) {
-          toast.error("Failed to create booking. Please try again.");
-          console.error(err);
-        } finally {
-          setLoading(false);
-        }
+    try {
+      const formData = new FormData(e.target as HTMLFormElement);
+      const parcelData = {
+        sender_name: formData.get("sender_name") as string,
+        sender_phone: formData.get("sender_phone") as string,
+        sender_address: formData.get("sender_address") as string,
+        receiver_name: formData.get("receiver_name") as string,
+        receiver_phone: formData.get("receiver_phone") as string,
+        receiver_address: formData.get("receiver_address") as string,
+        weight: Number(formData.get("weight")),
+        declared_value: Number(formData.get("declared_value")),
+        description: formData.get("description") as string,
       };
 
-       const handleTracking = async (e: React.FormEvent) => {
-          e.preventDefault();
-          setLoading(true);
-          setError(null);
-      
-          try {
-            const result = await getParcelByTrackingId(trackingId);
-            if(result){
-              toast.success(`Parcel found with tracking ID: ${trackingId}`);
-            }
-            setTrackingResult(result);
-            console.log(trackingResult);
-          } catch (err) {
-            toast.error("Failed to fetch tracking information.");
-            console.error(err);
-          } finally {
-            setLoading(false);
-          }
-        };
+      const parcel = await createParcel(parcelData);
+      toast.success(
+        `Booking successful! Your tracking ID is: ${parcel.tracking_id}`
+      );
+      setTrackingId(parcel.tracking_id);
+      (e.target as HTMLFormElement).reset();
+    } catch (err) {
+      toast.error("Failed to create booking. Please try again.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTracking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await getParcelByTrackingId(trackingId);
+      if (result) {
+        toast.success(`Parcel found with tracking ID: ${trackingId}`);
+      }
+      setTrackingResult(result);
+      console.log(trackingResult);
+    } catch (err) {
+      toast.error("Failed to fetch tracking information.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
-    <section id="booking" className="py-20 bg-gray-50">
+      <section id="booking" className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="flex border-b">
@@ -236,17 +236,18 @@ const Booking = () => {
                       "Book Parcel"
                     )}
                   </button>
-               {trackingId && (
-              <div className="mt-4">
-                <a
-                  href={`http://localhost:5000/api/receipt/${trackingId}`}
-                  target="_blank"
-                  className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition duration-300"
-                >
-                  Download Receipt
-                </a>
-              </div>
-            )}
+                  {trackingId && (
+                    <div className="mt-4">
+                      <a
+                        href={`http://localhost:5000/api/receipt/${trackingId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition duration-300"
+                      >
+                        Download Receipt
+                      </a>
+                    </div>
+                  )}
                 </form>
               ) : (
                 <div className="space-y-6">
@@ -325,6 +326,19 @@ const Booking = () => {
                               </h4>
                               <p>{trackingResult.created_at}</p>
                             </div>
+                            {trackingId && (
+                              <div className="mt-4">
+                                <a
+                                  href={`http://localhost:5000/api/receipt/${trackingId}`}
+                                  download={`receipt-${trackingId}.pdf`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition duration-300"
+                                >
+                                  Download Receipt
+                                </a>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -337,7 +351,7 @@ const Booking = () => {
         </div>
       </section>
     </>
-  )
-}
+  );
+};
 
-export default Booking
+export default Booking;

@@ -20,14 +20,13 @@ app.use(bodyParser.json());
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
   })
-  .then((e) => console.log(`Connected to MongoDB ${e.connection.host}`.green.bold))
+  .then((e) => console.log("Connected to MongoDB".green.bold))
   .catch((err) => console.error(err).red);
 
 // Routes Middleware
 app.use("/api/parcels", parcelRoutes);
+app.use("/api/receipt", parcelRoutes);
 app.use("/api/send-email", emailRoutes);
 
 // Start Server

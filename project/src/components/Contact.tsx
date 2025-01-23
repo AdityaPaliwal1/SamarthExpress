@@ -14,7 +14,7 @@ const Contact = () => {
           return toast.error("Please fill all the fields"); 
         }
 
-        const response = await fetch("http://localhost:5000/api/send-email", {
+        const response = await fetch("http://localhost:5000/api/send-email/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
