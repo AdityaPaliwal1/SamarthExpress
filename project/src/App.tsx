@@ -7,26 +7,25 @@ import Contacts from "./components/Contact";
 import Footer from "./Layouts/Footer";
 
 function App() {
-  
-return (
+  return (
     <div className="min-h-screen bg-white">
       {/* To run the toast notifications */}
-      <ToastContainer/>  
+      <ToastContainer />
       {/* Hero Section */}
-      <Hero/>
+      <Hero />
 
       {/* Booking Section */}
-      <Booking/>
+      <Booking />
 
       {/* Services Section */}
-      <Services/>
+      <Services />
 
       {/* Contact Section */}
-      
-       <Contacts/>
+
+      <Contacts />
 
       {/* Footer */}
-      <Footer/>
+      <Footer />
     </div>
   );
 }

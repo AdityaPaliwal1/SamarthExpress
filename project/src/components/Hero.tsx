@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react";
 
-import { Truck } from 'lucide-react';
+import { Truck, Package } from "lucide-react";
 const Hero = () => {
   return (
     <>
-     <header className="relative h-screen">
+      <header className="relative h-screen">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80"
@@ -45,14 +45,14 @@ const Hero = () => {
           </p>
           <a
             href="#booking"
-            className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300"
+            className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center"
           >
-            Book a Parcel
+            Book a Parcel <Package className="h-5 w-5 text-white ml-1" />
           </a>
         </div>
       </header>
     </>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;
