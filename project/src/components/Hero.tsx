@@ -45,9 +45,10 @@ const Hero = () => {
           </p>
           <a
             href="#booking"
-            className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center"
+            className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center "
+            
           >
-            Book a Parcel <Package className="h-5 w-5 text-white ml-1" />
+            Book a Parcel <Package className="h-5 w-5 text-white ml-1 font-bold" />
           </a>
         </div>
       </header>

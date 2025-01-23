@@ -23,8 +23,8 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("Connected to MongoDB".green))
-  .catch((err) => console.error(err));
+  .then((e) => console.log(`Connected to MongoDB ${e.connection.host}`.green.bold))
+  .catch((err) => console.error(err).red);
 
 // Routes Middleware
 app.use("/api/parcels", parcelRoutes);
