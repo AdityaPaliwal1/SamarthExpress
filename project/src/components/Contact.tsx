@@ -1,5 +1,6 @@
 import { Clock, Mail, Phone } from 'lucide-react';
 import React, { useState } from 'react'
+import { toast } from 'react-toastify';
 
 const Contact = () => {
 
@@ -9,6 +10,10 @@ const Contact = () => {
 
      const Sendmail = async (e: React.FormEvent) => {
         e.preventDefault();
+        if(!name || !email || !message) {
+          return toast.error("Please fill all the fields"); 
+        }
+
         const response = await fetch("http://localhost:5000/api/send-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -21,15 +26,12 @@ const Contact = () => {
     
         const result = await response.json();
         if (response.ok) {
-          alert(result.message); // Success message from backend
+          toast.success("Email sent Successfully ✅") // Success message from backend
           setName(""); // Clear form
           setEmail("");
           setMessage("");
         } else {
-          alert(
-            result.message || "Failed to send your message. Please try again later."
-          );
-        }
+          toast.error(result.message || "Failed to send your message. Please try again later."); }
       };
       
   return (

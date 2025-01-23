@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { toast } from 'react-toastify';
 import {
     Package,
     Search,
@@ -55,11 +56,11 @@ const Booking = () => {
           };
     
           const parcel = await createParcel(parcelData);
-          alert(`Booking successful! Your tracking ID is: ${parcel.tracking_id}`);
+          toast.success(`Booking successful! Your tracking ID is: ${parcel.tracking_id}`);
           setId(parcel.tracking_id);
           (e.target as HTMLFormElement).reset();
         } catch (err) {
-          alert("Failed to create booking. Please try again.");
+          toast.error("Failed to create booking. Please try again.");
           console.error(err);
         } finally {
           setLoading(false);
@@ -73,10 +74,13 @@ const Booking = () => {
       
           try {
             const result = await getParcelByTrackingId(trackingId);
+            if(result){
+              toast.success(`Parcel found with tracking ID: ${trackingId}`);
+            }
             setTrackingResult(result);
             console.log(trackingResult);
           } catch (err) {
-            alert("Failed to fetch tracking information.");
+            toast.error("Failed to fetch tracking information.");
             console.error(err);
           } finally {
             setLoading(false);
