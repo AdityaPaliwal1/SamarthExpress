@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import { account } from "../appwrite";
 import {
   Package,
   Search,
@@ -9,6 +10,8 @@ import {
   Box,
   Loader2,
 } from "lucide-react";
+
+const user = account.get();
 
 async function createParcel(parcelData: any) {
   const response = await fetch("http://localhost:5000/api/parcels", {
@@ -52,6 +55,13 @@ const Booking = () => {
         description: formData.get("description") as string,
       };
 
+      const user = await account.get();
+      if (!user) {
+        toast.error("Please login to book a parcel.");
+        return; // Exit early if the user is not logged in
+      }
+
+      // Only create the parcel if the user is logged in
       const parcel = await createParcel(parcelData);
       toast.success(
         `Booking successful! Your tracking ID is: ${parcel.tracking_id}`
@@ -59,7 +69,7 @@ const Booking = () => {
       setTrackingId(parcel.tracking_id);
       (e.target as HTMLFormElement).reset();
     } catch (err) {
-      toast.error("Failed to create booking. Please try again.");
+      toast.error("Failed to create booking. Please Log in.");
       console.error(err);
     } finally {
       setLoading(false);
