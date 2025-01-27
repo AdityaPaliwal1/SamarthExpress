@@ -47,19 +47,16 @@ const Booking = () => {
         sender_name: formData.get("sender_name") as string,
         sender_phone: formData.get("sender_phone") as string,
         sender_address: formData.get("sender_address") as string,
+        sender_city : formData.get("sender_city") as string,
         receiver_name: formData.get("receiver_name") as string,
         receiver_phone: formData.get("receiver_phone") as string,
         receiver_address: formData.get("receiver_address") as string,
+        receiver_city : formData.get("receiver_city") as string,
         weight: Number(formData.get("weight")),
         declared_value: Number(formData.get("declared_value")),
+        parcel_type: formData.get("parcel_type") as string,
         description: formData.get("description") as string,
       };
-
-      const user = await account.get();
-      if (!user) {
-        toast.error("Please login to book a parcel.");
-        return; // Exit early if the user is not logged in
-      }
 
       // Only create the parcel if the user is logged in
       const parcel = await createParcel(parcelData);
@@ -144,13 +141,20 @@ const Booking = () => {
                         name="sender_name"
                         type="text"
                         placeholder="Sender's Name"
-                        className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500 focus:z-10"
                         required
                       />
                       <input
                         name="sender_phone"
                         type="tel"
                         placeholder="Sender's Phone"
+                        className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
+                        required
+                      />
+                      <input
+                        name="sender_city"
+                        type="text"
+                        placeholder="Sender's City"
                         className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
                         required
                       />
@@ -180,6 +184,13 @@ const Booking = () => {
                         name="receiver_phone"
                         type="tel"
                         placeholder="Receiver's Phone"
+                        className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
+                        required
+                      />
+                      <input
+                        name="receiver_city"
+                        type="text"
+                        placeholder="Receiver's City"
                         className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
                         required
                       />
@@ -221,7 +232,17 @@ const Booking = () => {
                           className="w-full focus:outline-none"
                           required
                         />
+
                       </div>
+                      <div>
+                       <input name="parcel_type"
+                          type="text"
+                          placeholder="Parcel Type"
+                          className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
+                          required
+                        />
+                      </div>
+
                     </div>
                     <textarea
                       name="description"
@@ -303,6 +324,7 @@ const Booking = () => {
                                 Sender
                               </h4>
                               <p>{trackingResult.sender_name}</p>
+                              <p>{trackingResult.sender_city}</p>
                               <p>{trackingResult.sender_address}</p>
                             </div>
                             <div>
@@ -310,6 +332,7 @@ const Booking = () => {
                                 Receiver
                               </h4>
                               <p>{trackingResult.receiver_name}</p>
+                              <p>{trackingResult.receiver_city}</p>
                               <p>{trackingResult.receiver_address}</p>
                             </div>
                             <div>

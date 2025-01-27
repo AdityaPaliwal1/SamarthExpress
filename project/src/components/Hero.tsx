@@ -55,10 +55,11 @@ const Hero = () => {
   };
 
   useEffect(() => {
+    fetchUserProfile();
     const timer = setTimeout(() => {
       setLoading(false);
     }, 2000);
-    fetchUserProfile();
+    
     return () => clearTimeout(timer);
     
   }, []);
@@ -262,9 +263,14 @@ const Hero = () => {
                 placeholder="Password"
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300 mt-2"
               />
+              <button
+                className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300 mt-2"
+              >
+                Log in
+              </button>
             </div>
             <a href="#register" className="text-blue-500 hover:underline">
-              <p className="text-center py-4">Don't have an Account?</p>
+              <p className="text-center py-2 ">Don't have an Account?</p>
             </a>
             <button
               className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300 flex items-center justify-center"
