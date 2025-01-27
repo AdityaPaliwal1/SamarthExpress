@@ -5,4 +5,3 @@ const client = new Client()
 .setProject('67932280002233c059c8') ;
 
 export const account  = new Account(client);
-

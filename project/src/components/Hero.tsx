@@ -4,7 +4,6 @@ import { Truck, Package, LogOut, X, Menu } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 import Avatar from "react-avatar";
 import { toast } from "react-toastify";
-
 const Hero = () => {
   const [user, setUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,7 +38,7 @@ const Hero = () => {
   // Logout Functionality
   const handleLogout = async () => {
     try {
-      await account.deleteSession("current");
+      await account.deleteSessions();
       toast.success("Logged out successfully!");
       setUser(null); // Clear user data on logout
       setIsModalOpen(false);
@@ -67,9 +66,11 @@ const Hero = () => {
         <nav className="relative z-10 flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
           <div className="flex items-center space-x-2">
             <Truck className="h-8 w-8 text-white" />
-            <span className="text-2xl font-bold text-white">
-              Samarth Express
-            </span>
+            <a href="/">
+              <span className="text-2xl font-bold text-white">
+                Samarth Express
+              </span>
+            </a>
           </div>
 
           {/* Desktop Menu */}
@@ -85,8 +86,7 @@ const Hero = () => {
             </a>
             {!user ? (
               <a
-                href="#login"
-                className="text-white hover:text-blue-400"
+                className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded"
                 onClick={() => setLoginModal(true)}
               >
                 Login
@@ -115,8 +115,14 @@ const Hero = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="absolute top-0 left-0 w-full bg-black bg-opacity-50 md:hidden z-50">
+          <div className="absolute top-0 left-0 w-full bg-black bg-opacity-50 md:hidden z-50 ">
             <div className="flex flex-col items-center py-6">
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <X className="h-6 w-6" />
+              </button>
               <a
                 href="#booking"
                 className="text-white py-2"
@@ -140,12 +146,8 @@ const Hero = () => {
               </a>
               {!user ? (
                 <a
-                  href="#login"
-                  className="text-white py-2"
-                  onClick={() => {
-                    setLoginModal(true);
-                    setIsMobileMenuOpen(false);
-                  }} // Close menu and open login modal
+                  className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded"
+                  onClick={() => setLoginModal(true)}
                 >
                   Login
                 </a>
