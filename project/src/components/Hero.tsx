@@ -10,7 +10,6 @@ const Hero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [LoginModal, setLoginModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
-  const[loading, setLoading] = useState(true);
 
   // Handle OAuth Login
   const handleLogin = async () => {
@@ -56,23 +55,11 @@ const Hero = () => {
 
   useEffect(() => {
     fetchUserProfile();
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-    
-    return () => clearTimeout(timer);
     
   }, []);
 
 
-  if(loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        {/* <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div> */}
-        <div className="loader"></div>
-      </div>
-    );
-  }
+
 
   return (
     <>

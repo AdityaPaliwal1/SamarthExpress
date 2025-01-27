@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import { account } from "../appwrite";
+import Tracking from "./Tracking";
 import {
   Package,
   Search,
@@ -11,7 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-const user = account.get();
+
 
 async function createParcel(parcelData: any) {
   const response = await fetch("http://localhost:5000/api/parcels", {
@@ -47,11 +47,11 @@ const Booking = () => {
         sender_name: formData.get("sender_name") as string,
         sender_phone: formData.get("sender_phone") as string,
         sender_address: formData.get("sender_address") as string,
-        sender_city : formData.get("sender_city") as string,
+        sender_city: formData.get("sender_city") as string,
         receiver_name: formData.get("receiver_name") as string,
         receiver_phone: formData.get("receiver_phone") as string,
         receiver_address: formData.get("receiver_address") as string,
-        receiver_city : formData.get("receiver_city") as string,
+        receiver_city: formData.get("receiver_city") as string,
         weight: Number(formData.get("weight")),
         declared_value: Number(formData.get("declared_value")),
         parcel_type: formData.get("parcel_type") as string,
@@ -232,17 +232,16 @@ const Booking = () => {
                           className="w-full focus:outline-none"
                           required
                         />
-
                       </div>
                       <div>
-                       <input name="parcel_type"
+                        <input
+                          name="parcel_type"
                           type="text"
                           placeholder="Parcel Type"
                           className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
                           required
                         />
                       </div>
-
                     </div>
                     <textarea
                       name="description"
@@ -314,6 +313,7 @@ const Booking = () => {
                   <div>
                     {trackingResult && (
                       <div className="space-y-6">
+                        <Tracking />
                         <div className="border rounded-lg p-6">
                           <h3 className="text-xl font-semibold mb-4">
                             Parcel Information
@@ -340,6 +340,12 @@ const Booking = () => {
                                 Weight
                               </h4>
                               <p>{trackingResult.weight}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-600">
+                                Parcel Type
+                              </h4>
+                              <p>{trackingResult.parcel_type}</p>
                             </div>
                             <div>
                               <h4 className="font-semibold text-gray-600">

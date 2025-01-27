@@ -10,8 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chakra-ui/react": "^3.5.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@supabase/supabase-js": "^2.39.7",
     "appwrite": "^16.1.0",
+    "framer-motion": "^12.0.5",
     "jspdf": "^2.5.2",
     "lucide-react": "^0.344.0",
     "mongodb": "^6.12.0",

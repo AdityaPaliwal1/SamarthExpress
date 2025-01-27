@@ -56,11 +56,14 @@ app.get('/api/receipt/:trackingId', async (req, res) => {
   doc.fontSize(12).text(`Tracking ID: ${parcel.tracking_id}`);
   doc.text(`Sender Name: ${parcel.sender_name}`);
   doc.text(`Sender Phone: ${parcel.sender_phone}`);
+  doc.text(`Sender City : ${parcel.sender_city}`);
   doc.text(`Sender Address: ${parcel.sender_address}`);
   doc.text(`Receiver Name: ${parcel.receiver_name}`);
   doc.text(`Receiver Phone: ${parcel.receiver_phone}`);
+  doc.text(`Receiver City: ${parcel.receiver_city}`);
   doc.text(`Receiver Address: ${parcel.receiver_address}`);
   doc.text(`Weight: ${parcel.weight} kg`);
+  doc.text(`Parcel Type: ${parcel.parcel_type}`);
   doc.text(`Declared Value: ₹${parcel.declared_value}`);
   doc.text(`Description: ${parcel.description}`);
   doc.text(`Booked Time: ${parcel.created_at}`);
