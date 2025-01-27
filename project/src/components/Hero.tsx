@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { account } from "../appwrite";
+import "../index.css";
 import { Truck, Package, LogOut, X, Menu } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 import Avatar from "react-avatar";
@@ -9,6 +10,7 @@ const Hero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [LoginModal, setLoginModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
+  const[loading, setLoading] = useState(true);
 
   // Handle OAuth Login
   const handleLogin = async () => {
@@ -20,6 +22,7 @@ const Hero = () => {
       );
       toast.success("Login successful!");
       fetchUserProfile();
+      setLoginModal(false); // Close login modal after successful login
     } catch (e) {
       console.error("Login failed:", e);
     }
@@ -32,6 +35,9 @@ const Hero = () => {
       setUser(userData); // Store user data in state
     } catch (e) {
       console.error("Failed to fetch user profile:", e);
+      setTimeout(() => {
+        setLoginModal(true);
+      }, 5000); // Open login modal if user is not logged in
     }
   };
 
@@ -49,8 +55,23 @@ const Hero = () => {
   };
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
     fetchUserProfile();
+    return () => clearTimeout(timer);
+    
   }, []);
+
+
+  if(loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        {/* <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div> */}
+        <div className="loader"></div>
+      </div>
+    );
+  }
 
   return (
     <>
