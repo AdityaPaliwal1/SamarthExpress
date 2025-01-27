@@ -75,7 +75,7 @@ const Hero = () => {
         <nav className="relative z-10 flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
           <div className="flex items-center space-x-2">
             <Truck className="h-8 w-8 text-white" />
-            <a href="/">
+            <a href="/#">
               <span className="text-2xl font-bold text-white">
                 Samarth Express
               </span>

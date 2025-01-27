@@ -35,6 +35,7 @@ const Booking = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [trackingResult, setTrackingResult] = useState("");
+  const [book,setbook]  = useState(false);
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +65,7 @@ const Booking = () => {
         `Booking successful! Your tracking ID is: ${parcel.tracking_id}`
       );
       setTrackingId(parcel.tracking_id);
+      setbook(true);
       (e.target as HTMLFormElement).reset();
     } catch (err) {
       toast.error("Failed to create booking. Please Log in.");
@@ -266,7 +268,7 @@ const Booking = () => {
                       "Book Parcel"
                     )}
                   </button>
-                  {trackingId && (
+                  {book && (
                     <div className="mt-4">
                       <a
                         href={`http://localhost:5000/api/receipt/${trackingId}`}
