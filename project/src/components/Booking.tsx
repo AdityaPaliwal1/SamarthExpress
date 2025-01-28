@@ -11,8 +11,6 @@ import {
   Loader2,
 } from "lucide-react";
 
-
-
 async function createParcel(parcelData: any) {
   const response = await fetch("http://localhost:5000/api/parcels", {
     method: "POST",
@@ -35,7 +33,12 @@ const Booking = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [trackingResult, setTrackingResult] = useState("");
-  const [book,setbook]  = useState(false);
+  const [book, setbook] = useState(false);
+
+  const formatToIST = (utcDate:string) => {
+    const date = new Date(utcDate); // Convert UTC date string to Date object
+    return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }); // Format date
+  };
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -315,7 +318,7 @@ const Booking = () => {
                   <div>
                     {trackingResult && (
                       <div className="space-y-6">
-                        <Tracking />
+                        <Tracking trackingID={trackingId} />
                         <div className="border rounded-lg p-6">
                           <h3 className="text-xl font-semibold mb-4">
                             Parcel Information
@@ -365,7 +368,7 @@ const Booking = () => {
                               <h4 className="font-semibold text-gray-600">
                                 Booked Time
                               </h4>
-                              <p>{trackingResult.created_at}</p>
+                              <p>{formatToIST(trackingResult.created_at)}</p>
                             </div>
                             {trackingId && (
                               <div className="mt-4">

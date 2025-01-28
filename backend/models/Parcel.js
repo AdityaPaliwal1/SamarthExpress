@@ -14,7 +14,7 @@ const parcelSchema = new mongoose.Schema({
   parcel_type: String,
   description: String,
   tracking_id: { type: String, unique: true },
-  created_at: { type: Date, default: Date.now },
+  created_at: { type: Date, default: new Date },
 });
 
 module.exports = mongoose.model("Parcel", parcelSchema);
