@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import "../index.css";
 async function getParcelDetails(trackingId: string) {
   const response = await fetch(
     `http://localhost:5000/api/parcels/${trackingId}`
@@ -8,7 +8,7 @@ async function getParcelDetails(trackingId: string) {
 }
 
 const Tracking = ({ trackingID }: any) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [createdAt, setCreatedAt] = useState<Date | null>(null);
   const [currentStep, setCurrentStep] = useState<number>(1);
 
@@ -58,7 +58,7 @@ const Tracking = ({ trackingID }: any) => {
   return (
        <>
        {loading ? (
-        <p>Loading.....</p>
+       <div className="dot-loader"></div>
        ):(
       <div className="space-y-4">
         <div className="border border-gray-200 p-4">
@@ -73,7 +73,8 @@ const Tracking = ({ trackingID }: any) => {
             Step2: Out for Delivery
           </h2>
           <p className={currentStep>=2  ? "text-green-400" : "text-red-400"}>
-            Your Parcel is out for delivery.
+            {/* Your Parcel is out for delivery. */}
+            {currentStep >=2 ? "Your Parcel is out for delivery " : "Your Parcel is ready to out after 20hrs of booking"}
           </p>
         </div>
         <div className="border border-gray-200 p-4">

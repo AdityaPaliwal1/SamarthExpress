@@ -28,11 +28,26 @@ async function getParcelByTrackingId(trackingId: string) {
 }
 
 const Booking = () => {
+  interface ParcelDetails {
+    sender_name: string;
+    sender_city: string;
+    sender_address: string;
+    receiver_name: string;
+    receiver_city: string;
+    receiver_address: string;
+    weight: number;
+    declared_value: number;
+    parcel_type: string;
+    description: string;
+    tracking_id: string;
+    created_at: string; // or Date if you want to store it as a Date
+  }
+  
   const [activeTab, setActiveTab] = useState("book");
   const [trackingId, setTrackingId] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [trackingResult, setTrackingResult] = useState("");
+  const [trackingResult, setTrackingResult] = useState<ParcelDetails | null>(null);
   const [book, setbook] = useState(false);
 
   const formatToIST = (utcDate:string) => {
@@ -318,6 +333,7 @@ const Booking = () => {
                   <div>
                     {trackingResult && (
                       <div className="space-y-6">
+                        
                         <Tracking trackingID={trackingId} />
                         <div className="border rounded-lg p-6">
                           <h3 className="text-xl font-semibold mb-4">

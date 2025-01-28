@@ -6,7 +6,11 @@ import { FaGoogle } from "react-icons/fa";
 import Avatar from "react-avatar";
 import { toast } from "react-toastify";
 const Hero = () => {
-  const [user, setUser] = useState(null);
+  interface User {
+    name: string;
+    email: string;
+  }
+  const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [LoginModal, setLoginModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
@@ -55,11 +59,7 @@ const Hero = () => {
 
   useEffect(() => {
     fetchUserProfile();
-    
   }, []);
-
-
-
 
   return (
     <>
@@ -115,10 +115,14 @@ const Hero = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-white "
+            className="md:hidden text-white  "
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <Menu className="h-8 w-8" />
+            {isMobileMenuOpen ? (
+              <Menu className="hidden" />
+            ) : (
+              <Menu className="h-8 w-8 " />
+            )}
           </button>
         </nav>
 
@@ -127,10 +131,10 @@ const Hero = () => {
           <div className="absolute top-0 left-0 w-full bg-black bg-opacity-50 md:hidden z-50 ">
             <div className="flex flex-col items-center py-6">
               <button
-                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                className="absolute top-4 right-4 text-gray-400 "
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <X className="h-6 w-6" />
+                <X className="h-8 w-8" />
               </button>
               <a
                 href="#booking"
@@ -174,7 +178,6 @@ const Hero = () => {
             </div>
           </div>
         )}
-
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
             Your Trusted Logistics Partner
@@ -211,9 +214,15 @@ const Hero = () => {
             <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
               User Profile
             </h3>
-            <div className="mb-4">
-              <p className="text-sm font-bold text-gray-800">{user?.name}</p>
-              <p className="text-sm text-gray-500">{user?.email}</p>
+            <div className="mb-4 ">
+              <div className="flex text-sm gap-2">
+                <span>Name:</span>
+                <p className="text-sm font-bold text-gray-800">{user?.name}</p>
+              </div>
+              <div className="flex text-sm gap-2">
+                <span>Email:</span>
+                <p className="text-sm font-bold text-gray-800">{user?.email}</p>
+              </div>
             </div>
             <button
               className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300 flex items-center justify-center"
@@ -250,9 +259,7 @@ const Hero = () => {
                 placeholder="Password"
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300 mt-2"
               />
-              <button
-                className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300 mt-2"
-              >
+              <button className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300 mt-2">
                 Log in
               </button>
             </div>
