@@ -36,9 +36,9 @@ const Tracking = ({ trackingID }: any) => {
 
         if (elapsedHours >= 24) {
           setCurrentStep(4);
-        } else if (elapsedHours >= 20) {
+        } else if (elapsedHours >= 21) {
           setCurrentStep(3);
-        } else if (elapsedHours >= 18) {
+        } else if (elapsedHours >= 20) {
           setCurrentStep(2);
         } else {
           setCurrentStep(1);

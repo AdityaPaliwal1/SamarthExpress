@@ -88,6 +88,16 @@ const Contact = () => {
             </form>
           </div>
         </div>
+
+        <div className="w-full mt-2 p-4">
+      <iframe
+        title="Samarth Express Location"
+        className="w-full h-[600px] border-0"
+        scrolling="no"
+        src="https://maps.google.com/maps?width=100%25&amp;height=300&amp;hl=en&amp;q=Samarth%20Express+(Samarth%20Express)&amp;t=&amp;z=14&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"
+        allowFullScreen
+      ></iframe>
+    </div>
       </section>
     </>
   )

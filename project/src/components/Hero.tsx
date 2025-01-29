@@ -1,65 +1,114 @@
 import React, { useState, useEffect } from "react";
-import { account } from "../appwrite";
-import "../index.css";
-import { Truck, Package, LogOut, X, Menu } from "lucide-react";
-import { FaGoogle } from "react-icons/fa";
 import Avatar from "react-avatar";
+import { FaGoogle } from "react-icons/fa";
+import { X } from "lucide-react";
+import "../index.css";
+import { Truck, Package, LogOut, Menu } from "lucide-react";
 import { toast } from "react-toastify";
 const Hero = () => {
-  interface User {
+  interface UserDetails {
     name: string;
     email: string;
   }
-  const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [LoginModal, setLoginModal] = useState(false);
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("Customer");
+  const [islogin, setLogin] = useState(false);
+  const [userdetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [ProfileModalOpen, setProfileModalOpen] = useState(false);
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
 
-  // Handle OAuth Login
+  useEffect(() => {
+    const token = localStorage.getItem("jwt_token");
+    if (token) {
+      setLogin(true);
+      const user = localStorage.getItem("user_details");
+      if (user) {
+        try {
+          setUserDetails(JSON.parse(user)); // Safe parsing
+        } catch (error) {
+          console.error("Error parsing user details:", error);
+        }
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("jwt_token");
+    localStorage.removeItem("user_details"); // Remove token from localStorage
+    setLogin(false); // Set login state to false
+    setUserDetails(null);
+    setProfileModalOpen(false);
+    toast.success("Logged out successfully!");
+  };
+  //  Login Handler
   const handleLogin = async () => {
     try {
-      await account.createOAuth2Session(
-        "google",
-        "http://localhost:5173",
-        "http://localhost:5173/fail"
-      );
-      toast.success("Login successful!");
-      fetchUserProfile();
-      setLoginModal(false); // Close login modal after successful login
-    } catch (e) {
-      console.error("Login failed:", e);
+      const response = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("login data ", data);
+
+      if (response.ok) {
+        // Success: Notify user and reset fields
+        localStorage.setItem("jwt_token", data.token);
+        localStorage.setItem("user_details", JSON.stringify(data.user)); // Store user details
+        setUserDetails(data.user); // Update state with user details
+        toast.success("Login successful!");
+        setEmail("");
+        setPassword("");
+        setLogin(true);
+        setIsModalOpen(false);
+      } else {
+        // Error: Notify user
+        toast.error("Login failed, please try again.");
+      }
+    } catch (error) {
+      // Handle any network or server errors
+      toast.error("Login Failed , Check Credentials ");
     }
   };
 
-  // Fetch User Profile
-  const fetchUserProfile = async () => {
+  // Register Handler
+  const handleRegister = async () => {
     try {
-      const userData = await account.get();
-      setUser(userData); // Store user data in state
+      const response = await fetch("http://localhost:5000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name,
+          email: email,
+          password: password,
+          role: role,
+        }),
+      });
+
+      if (response.ok) {
+        // Success: Notify user and reset fields
+        toast.success("Register successful!");
+        setEmail("");
+        setPassword("");
+        setName("");
+
+        setRegisterModalOpen(false);
+      } else {
+        // Error: Notify user
+        toast.error("Register failed, please try again.");
+      }
     } catch (e) {
-      console.error("Failed to fetch user profile:", e);
-      setTimeout(() => {
-        setLoginModal(true);
-      }, 5000); // Open login modal if user is not logged in
+      toast.error("Failed , Check Credentials ");
     }
   };
-
-  // Logout Functionality
-  const handleLogout = async () => {
-    try {
-      await account.deleteSessions();
-      toast.success("Logged out successfully!");
-      setUser(null); // Clear user data on logout
-      setIsModalOpen(false);
-      window.location.reload(); // Reload the page after logout
-    } catch (e) {
-      console.error("Logout failed:", e);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
 
   return (
     <>
@@ -72,6 +121,7 @@ const Hero = () => {
           />
           <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         </div>
+
         <nav className="relative z-10 flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
           <div className="flex items-center space-x-2">
             <Truck className="h-8 w-8 text-white" />
@@ -93,91 +143,44 @@ const Hero = () => {
             <a href="#contact" className="text-white hover:text-blue-400">
               Contact
             </a>
-            {!user ? (
+            {!islogin ? (
               <a
                 className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded"
-                onClick={() => setLoginModal(true)}
+                onClick={() => setIsModalOpen(true)}
               >
                 Login
               </a>
             ) : (
-              <div>
-                <Avatar
-                  name={user?.name || "Guest"}
-                  size="30"
-                  round={true}
-                  className="cursor-pointer"
-                  onClick={() => setIsModalOpen(true)}
-                />
+              <div className="flex items-center space-x-2">
+                <div>
+                  <Avatar
+                    name={userdetails?.name || "User"}
+                    size="30"
+                    round={true}
+                    className="cursor-pointer"
+                    onClick={() => setProfileModalOpen(true)}
+                  />
+                </div>
+                {/* <button className="text-white" onClick={handleLogout}>
+                  <LogOut className="h-5 w-5" />
+                </button> */}
               </div>
             )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-white  "
+            className="md:hidden text-white"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
               <Menu className="hidden" />
             ) : (
-              <Menu className="h-8 w-8 " />
+              <Menu className="h-8 w-8" />
             )}
           </button>
         </nav>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="absolute top-0 left-0 w-full bg-black bg-opacity-50 md:hidden z-50 ">
-            <div className="flex flex-col items-center py-6">
-              <button
-                className="absolute top-4 right-4 text-gray-400 "
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <X className="h-8 w-8" />
-              </button>
-              <a
-                href="#booking"
-                className="text-white py-2"
-                onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu
-              >
-                Book Parcel
-              </a>
-              <a
-                href="#services"
-                className="text-white py-2"
-                onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu
-              >
-                Services
-              </a>
-              <a
-                href="#contact"
-                className="text-white py-2"
-                onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu
-              >
-                Contact
-              </a>
-              {!user ? (
-                <a
-                  className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded"
-                  onClick={() => setLoginModal(true)}
-                >
-                  Login
-                </a>
-              ) : (
-                <div
-                  className="text-white py-2"
-                  onClick={() => {
-                    setIsModalOpen(true);
-                    setIsMobileMenuOpen(false);
-                  }} // Close menu and open profile modal
-                >
-                  <Avatar name={user?.name || "Guest"} size="30" round={true} />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
             Your Trusted Logistics Partner
@@ -186,10 +189,10 @@ const Hero = () => {
             Delivering excellence across India with speed, reliability, and
             precision.
           </p>
-          {user && (
-            <div className="relative z-10 text-center text-white">
-              <h2 className="text-2xl font-bold">Welcome, {user.name}!</h2>
-            </div>
+          {islogin && userdetails && (
+            <p className="text-2xl text-white font-bold ">
+              Welcome , {userdetails.name}👋
+            </p>
           )}
           <a
             href="#booking"
@@ -201,29 +204,232 @@ const Hero = () => {
         </div>
       </header>
 
-      {/* User Profile Modal */}
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="absolute top-0 left-0 w-full bg-black bg-opacity-50 md:hidden z-50 ">
+          <div className="flex flex-col items-center py-6">
+            <button
+              className="absolute top-4 right-4 text-gray-400 "
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <X className="h-8 w-8" />
+            </button>
+            <a
+              href="#booking"
+              className="text-white py-2"
+              onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu
+            >
+              Book Parcel
+            </a>
+            <a
+              href="#services"
+              className="text-white py-2"
+              onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu
+            >
+              Services
+            </a>
+            <a
+              href="#contact"
+              className="text-white py-2"
+              onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu
+            >
+              Contact
+            </a>
+            {!islogin ? (
+              <a
+                className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Login
+              </a>
+            ) : (
+              <div className="flex items-center space-x-2">
+               <div>
+                  <Avatar
+                    name={userdetails?.name || "User"}
+                    size="30"
+                    round={true}
+                    className="cursor-pointer"
+                    onClick={() => setProfileModalOpen(true)}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div
+              className="text-white py-2"
+              onClick={() => {
+                setIsModalOpen(true);
+                setIsMobileMenuOpen(false);
+              }} // Close menu and open profile modal
+            ></div>
+          </div>
+        </div>
+      )}
+
+      {/* Login Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => setIsModalOpen(false)} // Close modal
             >
               <X className="h-6 w-6" />
             </button>
             <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-              User Profile
+              Sign In
             </h3>
-            <div className="mb-4 ">
-              <div className="flex text-sm gap-2">
-                <span>Name:</span>
-                <p className="text-sm font-bold text-gray-800">{user?.name}</p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLogin();
+              }}
+            >
+              <div className="mb-4">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
+                  required
+                />
               </div>
-              <div className="flex text-sm gap-2">
-                <span>Email:</span>
-                <p className="text-sm font-bold text-gray-800">{user?.email}</p>
+              <div className="mb-4">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
+                  required
+                />
               </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
+              >
+                Log in
+              </button>
+            </form>
+
+            <a
+              className="cursor-pointer"
+              onClick={() => {
+                setIsModalOpen(false); // Close the login modal
+                setRegisterModalOpen(true); // Open the register modal
+              }}
+            >
+              <p className="text-blue-300 text-center mt-2">
+                Dont have an account?
+              </p>
+            </a>
+            <div className="text-center py-4">
+              <button className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-300 flex items-center justify-center">
+                <FaGoogle className="h-5 w-5 mr-2" />
+                Sign in with Google
+              </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Register Modal */}
+
+      {registerModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              onClick={() => setRegisterModalOpen(false)} // Close modal
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+              Register
+            </h3>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleRegister();
+              }}
+            >
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <select
+                  name="Role"
+                  value={role} // Bind to the state
+                  onChange={(e) => setRole(e.target.value)} // Update state on change
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
+                >
+                  <option value="Customer">Customer</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
+              >
+                Register
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ProfileModal */}
+
+      {ProfileModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              onClick={() => setProfileModalOpen(false)} // Close modal
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+               User Profile
+            </h3>
+            <div className="flex gap-2">
+              <span>Name:</span>
+              <p className="font-bold">{userdetails?.name}</p>
+            </div>
+            <div className="flex gap-2">
+              <span>Email:</span>
+              <p className="font-bold">{userdetails?.email}</p>
+            </div>
+            <div>
             <button
               className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300 flex items-center justify-center"
               onClick={handleLogout}
@@ -231,48 +437,7 @@ const Hero = () => {
               <LogOut className="h-5 w-5 mr-2" />
               Logout
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Login Modal */}
-      {LoginModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
-            <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-              onClick={() => setLoginModal(false)}
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-              Sign In
-            </h3>
-            <div className="mb-4">
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300 mt-2"
-              />
-              <button className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300 mt-2">
-                Log in
-              </button>
             </div>
-            <a href="#register" className="text-blue-500 hover:underline">
-              <p className="text-center py-2 ">Don't have an Account?</p>
-            </a>
-            <button
-              className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300 flex items-center justify-center"
-              onClick={handleLogin}
-            >
-              <FaGoogle className="h-5 w-5 mr-2" />
-              Sign in with Google{" "}
-            </button>
           </div>
         </div>
       )}

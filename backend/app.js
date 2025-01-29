@@ -12,6 +12,7 @@ require("colors");
 // Import Routes
 const parcelRoutes = require("./routes/parcelRoutes");
 const emailRoutes = require("./routes/emailRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 
 // Initialize App
@@ -33,6 +34,7 @@ mongoose
 app.use("/api/parcels", parcelRoutes);
 // app.use("/api/receipt", parcelRoutes);
 app.use("/api/send-email", emailRoutes);
+app.use("/api",userRoutes);
 
 
 app.get('/api/receipt/:trackingId', async (req, res) => {
