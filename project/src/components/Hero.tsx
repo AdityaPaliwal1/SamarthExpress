@@ -5,10 +5,12 @@ import { X } from "lucide-react";
 import "../index.css";
 import { Truck, Package, LogOut, Menu } from "lucide-react";
 import { toast } from "react-toastify";
+import Booking from "./Booking";
 const Hero = () => {
   interface UserDetails {
     name: string;
     email: string;
+    role : string;
   }
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -441,6 +443,8 @@ const Hero = () => {
           </div>
         </div>
       )}
+
+     <Booking userRole={userdetails?.role || "Customer"} />
     </>
   );
 };

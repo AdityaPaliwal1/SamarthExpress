@@ -57,7 +57,7 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(404).send("User not found with this email address.");
     }
-
+   
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).send("Incorrect password.");
@@ -65,7 +65,7 @@ exports.login = async (req, res) => {
 
     // Generate a JWT token for the user
     const token = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id, email: user.email , userRole : user.role },
       process.env.JWT_SECRET, // Use a secure secret key
       { expiresIn: "1h" } // Token expires in 1 hour
     );
@@ -78,6 +78,7 @@ exports.login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        role : user.role ,
       },
     });
   } catch (e) {
