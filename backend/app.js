@@ -31,10 +31,19 @@ mongoose
   .catch((err) => console.error(err).red);
 
 // Routes Middleware
-app.use("/api/parcels", parcelRoutes);
-// app.use("/api/receipt", parcelRoutes);
-app.use("/api/send-email", emailRoutes);
-app.use("/api",userRoutes);
+app.use("/api/parcels", parcelRoutes); //for booking and tracking
+app.use("/api/send-email", emailRoutes); //for sending email
+app.use("/api",userRoutes); //for user registration and login
+
+app.use("/api/getAll" , async(req,res)=>{
+  try {
+    const allParcels = await Parcel.find();
+    res.status(200).json(allParcels);
+  } catch (err) {
+    console.error("Error fetching all parcels:", err);
+    res.status(500).send("Error fetching all parcels");
+  }
+})
 
 
 app.get('/api/receipt/:trackingId', async (req, res) => {

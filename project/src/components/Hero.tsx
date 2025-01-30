@@ -163,9 +163,6 @@ const Hero = () => {
                     onClick={() => setProfileModalOpen(true)}
                   />
                 </div>
-                {/* <button className="text-white" onClick={handleLogout}>
-                  <LogOut className="h-5 w-5" />
-                </button> */}
               </div>
             )}
           </div>
@@ -196,13 +193,21 @@ const Hero = () => {
               Welcome , {userdetails.name}👋
             </p>
           )}
-          <a
-            href="#booking"
-            className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
-          >
-            Book a Parcel{" "}
-            <Package className="h-5 w-5 text-white ml-1 font-bold" />
-          </a>
+        {islogin && userdetails?.role === "Admin" ? (
+    <a
+    href="#booking" // Replace with the actual link to the admin dashboard
+    className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
+  >
+    Go to Dashboard <Package className="h-5 w-5 text-white ml-1 font-bold" />
+  </a>
+  ) : (
+      <a
+        href="#booking" // Replace with the actual link to the admin dashboard
+        className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
+      >
+        Book Parcel <Package className="h-5 w-5 text-white ml-1 font-bold" />
+      </a>    
+  )}
         </div>
       </header>
 
@@ -420,7 +425,7 @@ const Hero = () => {
             >
               <X className="h-6 w-6" />
             </button>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center  text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
                User Profile
             </h3>
             <div className="flex gap-2">
@@ -433,7 +438,7 @@ const Hero = () => {
             </div>
             <div>
             <button
-              className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300 flex items-center justify-center"
+              className="w-full bg-blue-500 text-white px-4 py-2 mt-3 rounded hover:bg-blue-600 transition duration-300 flex items-center justify-center"
               onClick={handleLogout}
             >
               <LogOut className="h-5 w-5 mr-2" />
@@ -443,7 +448,6 @@ const Hero = () => {
           </div>
         </div>
       )}
-
      <Booking userRole={userdetails?.role || "Customer"} />
     </>
   );

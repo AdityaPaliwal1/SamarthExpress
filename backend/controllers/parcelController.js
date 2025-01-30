@@ -25,6 +25,24 @@ exports.getParcel = async (req, res) => {
   }
 };
 
+// update parcel (delivered)
+exports.updateDeliveryStatus = async (req, res) => {
+  const { trackingId } = req.params;
+  const { delivered } = req.body;
+
+  try {
+    const parcel = await Parcel.findOneAndUpdate(
+      { tracking_id: trackingId },
+      { delivered },
+      { new: true } // Return the updated document
+    );
+    res.json(parcel);
+  } catch (err) {
+    res.status(500).send("Error updating delivery status");
+  }
+};
+
+
 // Generate PDF Receipt
 exports.generateReceipt = async (req, res) => {
   const { trackingId } = req.params;

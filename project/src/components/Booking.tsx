@@ -28,7 +28,7 @@ async function getParcelByTrackingId(trackingId: string) {
 }
 
 async function getAllParcels() {
-  const response = await fetch("http://localhost:5000/api/allparcels");
+  const response = await fetch("http://localhost:5000/api/getAll");
   return response.json();
 }
 
@@ -46,6 +46,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
     description: string;
     tracking_id: string;
     created_at: string;
+    delivered: boolean;
   }
 
   const [activeTab, setActiveTab] = useState("book");
@@ -138,7 +139,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
   return (
     <>
       <section id="booking" className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className={userRole === "Customer" ? "max-w-4xl mx-auto px-4" : "max-w-7xl mx-auto px-4"}>
           <div className="bg-white rounded-lg shadow-xl overflow-hidden">
             {userRole === "Customer" ? (
               <>
@@ -435,15 +436,61 @@ const Booking = ({ userRole }: { userRole: string }) => {
             ) : userRole === "Admin" ? (
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
-                <div className="space-y-6">
-                  {allParcels.map((parcel) => (
-                    <div
-                      key={parcel.tracking_id}
-                      className="border rounded-lg p-6"
-                    >
-                      {/* Admin dashboard parcel details */}
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white border border-gray-200">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="py-2 px-4 border-b">Sender</th>
+                        <th className="py-2 px-4 border-b">Receiver</th>
+                        <th className="py-2 px-4 border-b">Sender City</th>
+                        <th className="py-2 px-4 border-b">Receiver City</th>
+                        <th className="py-2 px-4 border-b">Parcel Type</th>
+                        <th className="py-2 px-4 border-b">Date</th>
+                        <th className="py-2 px-4 border-b">Amount</th>
+                        <th className="py-2 px-4 border-b">Delivered</th>{" "}
+                        {/* New Column */}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allParcels.map((parcel) => (
+                        <tr
+                          key={parcel.tracking_id}
+                          className="hover:bg-gray-50"
+                        >
+                          <td className="py-2 px-4 border-b">
+                            {parcel.sender_name}
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            {parcel.receiver_name}
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            {parcel.sender_city}
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            {parcel.receiver_city}
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            {parcel.parcel_type}
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            {new Date(parcel.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            ₹{parcel.declared_value}
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            {parcel.delivered ? (
+                              <span className="text-green-600">Delivered</span>
+                            ) : (
+                              <span className="text-red-600">
+                                Not Delivered
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             ) : null}
