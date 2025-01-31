@@ -55,7 +55,6 @@ const Tracking = ({ trackingID }: any) => {
 
         if (elapsedHours >= 24) {
           setCurrentStep(4);
-          // Update delivery status in the database
           updateDeliveryStatus(trackingID, true); // Mark as delivered
         } else if (elapsedHours >= 21) {
           setCurrentStep(3);

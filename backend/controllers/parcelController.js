@@ -2,13 +2,27 @@ const Parcel = require("../models/Parcel");
 const puppeteer = require("puppeteer");
 const receiptTemplate = require("../views/receiptTemplate");
 const { jsPDF } = require("jspdf");
+const Razorpay = require("razorpay");
+require("dotenv").config();
+const razorpay = require("../utils/razorpay");
 // Create Parcel
 exports.createParcel = async (req, res) => {
   try {
+    const { razorpay_payment_id, trackingDetails } = req.body;
+    if (!razorpay_payment_id) {
+      return res.status(400).json({ error: "Payment ID is required" });
+    }
     const trackingId = `SE-${Date.now()}`;
-    const parcel = new Parcel({ ...req.body, tracking_id: trackingId });
+    const parcel = new Parcel({
+      ...trackingDetails,
+      tracking_id: trackingId,
+      razorpay_payment_id,
+    });
     await parcel.save();
-    res.json(parcel);
+    res.json({
+      message: "Parcel created successfully",
+      parcel,
+    });
   } catch (err) {
     res.status(500).send("Error creating parcel");
   }
@@ -41,7 +55,6 @@ exports.updateDeliveryStatus = async (req, res) => {
     res.status(500).send("Error updating delivery status");
   }
 };
-
 
 // Generate PDF Receipt
 exports.generateReceipt = async (req, res) => {

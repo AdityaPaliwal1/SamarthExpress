@@ -11,12 +11,23 @@ import {
   Loader2,
 } from "lucide-react";
 
-async function createParcel(parcelData: any) {
-  const response = await fetch("http://localhost:5000/api/parcels", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(parcelData),
-  });
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+// async function createParcel(parcelData: any) {
+//   const response = await fetch("http://localhost:5000/api/parcels", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify(parcelData),
+//   });
+//   return response.json();
+// }
+
+async function getRazorpayKey() {
+  const response = await fetch("http://localhost:5000/api/razorpay-key");
   return response.json();
 }
 
@@ -48,7 +59,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
     created_at: string;
     delivered: boolean;
   }
-
+  const [razorpayKey, setRazorpayKey] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("book");
   const [trackingId, setTrackingId] = useState("");
   const [error, setError] = useState(null);
@@ -64,6 +75,13 @@ const Booking = ({ userRole }: { userRole: string }) => {
       fetchAllParcels();
     }
   }, [userRole]);
+
+  useEffect(() => {
+    // Fetch Razorpay Key ID when the component mounts
+    getRazorpayKey().then((data) => {
+      setRazorpayKey(data.key);
+    });
+  }, []);
 
   const fetchAllParcels = async () => {
     try {
@@ -85,6 +103,12 @@ const Booking = ({ userRole }: { userRole: string }) => {
     setLoading(true);
     setError(null);
 
+    if (!razorpayKey) {
+      toast.error("Razorpay key not available. Please try again later.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData(e.target as HTMLFormElement);
       const parcelData = {
@@ -102,13 +126,60 @@ const Booking = ({ userRole }: { userRole: string }) => {
         description: formData.get("description") as string,
       };
 
-      const parcel = await createParcel(parcelData);
-      toast.success(
-        `Booking successful! Your tracking ID is: ${parcel.tracking_id}`
-      );
-      setTrackingId(parcel.tracking_id);
-      setbook(true);
-      (e.target as HTMLFormElement).reset();
+      const paymentResponse = await fetch("http://localhost:5000/api/payment/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ declared_value: parcelData.declared_value }),
+      });
+
+      if (!paymentResponse.ok) {
+        throw new Error("Failed to create Razorpay order");
+      }
+
+      const { order_id, amount, currency } = await paymentResponse.json();
+
+      const options = {
+        key: razorpayKey,
+        amount: amount,
+        currency: currency,
+        name: "Samarth Express",
+        description: "Parcel Booking Payment",
+        order_id: order_id,
+        handler: async (response: any) => {
+          const {razorpay_payment_id } = response;
+
+          const parcelResponse = await fetch("http://localhost:5000/api/parcels", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_payment_id, // Pass payment ID
+              trackingDetails: parcelData, // Pass parcel details
+            }),
+          });
+
+          if (!parcelResponse.ok) {
+            throw new Error("Parcel booking failed after payment");
+          }
+
+          const parcelDataRes = await parcelResponse.json();
+          toast.success(`Booking successful! Your tracking ID is: ${parcelDataRes.parcel.tracking_id}`);
+  
+          setTrackingId(parcelDataRes.parcel.tracking_id);
+          setbook(true);
+          (e.target as HTMLFormElement).reset();
+        },
+
+        prefill: {
+          name: parcelData.sender_name,
+          email: "customer@example.com",
+          contact: parcelData.sender_phone,
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (err) {
       toast.error("Failed to create booking. Please Log in.");
       console.error(err);
@@ -139,7 +210,13 @@ const Booking = ({ userRole }: { userRole: string }) => {
   return (
     <>
       <section id="booking" className="py-20 bg-gray-50">
-        <div className={userRole === "Customer" ? "max-w-4xl mx-auto px-4" : "max-w-7xl mx-auto px-4"}>
+        <div
+          className={
+            userRole === "Customer"
+              ? "max-w-4xl mx-auto px-4"
+              : "max-w-7xl mx-auto px-4"
+          }
+        >
           <div className="bg-white rounded-lg shadow-xl overflow-hidden">
             {userRole === "Customer" ? (
               <>
@@ -361,6 +438,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                         <div className="space-y-6">
                           {/* Parcel tracking details */}
                           <Tracking trackingID={trackingId} />
+                          
                           <div className="border rounded-lg p-6">
                             <h3 className="text-xl font-semibold mb-4">
                               Parcel Information

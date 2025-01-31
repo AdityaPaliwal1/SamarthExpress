@@ -7,6 +7,7 @@ const path = require("path");
 const Parcel = require("./models/Parcel");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const razorpay = require("./utils/razorpay");
 require("colors");
 
 // Import Routes
@@ -25,17 +26,19 @@ app.use(bodyParser.json());
 
 // MongoDB Connection
 mongoose
-  .connect(process.env.MONGO_URI, {
-  })
+  .connect(process.env.MONGO_URI, {})
   .then((e) => console.log("Connected to MongoDB".green.bold))
   .catch((err) => console.error(err).red);
 
 // Routes Middleware
 app.use("/api/parcels", parcelRoutes); //for booking and tracking
 app.use("/api/send-email", emailRoutes); //for sending email
-app.use("/api",userRoutes); //for user registration and login
+app.use("/api", userRoutes); //for user registration and login
 
-app.use("/api/getAll" , async(req,res)=>{
+
+
+
+app.use("/api/getAll", async (req, res) => {
   try {
     const allParcels = await Parcel.find();
     res.status(200).json(allParcels);
@@ -43,26 +46,64 @@ app.use("/api/getAll" , async(req,res)=>{
     console.error("Error fetching all parcels:", err);
     res.status(500).send("Error fetching all parcels");
   }
+});
+
+app.use("/api/razorpay-key", async (req, res) => {
+  try {
+    res.json({ key: process.env.RAZORPAY_KEY_ID });
+  } catch (err) {
+    res.status(500).send("Error fetching Razorpay key");
+  }
+}
+);
+
+
+app.use ("/api/payment/order" , async(req,res)=>{
+  try{
+    const amount = req.body.declared_value * 100; // Convert to paise
+    const currency = "INR";
+
+    const options = {
+      amount: amount,
+      currency: currency,
+      receipt: `SE-${Date.now()}`,
+      payment_capture: 1,
+    };
+
+    const razorpayOrder = await razorpay.orders.create(options);
+
+    res.json({
+      order_id: razorpayOrder.id,
+      currency: razorpayOrder.currency,
+      amount: razorpayOrder.amount,
+    });
+  }
+  catch(err){
+    console.error("Error creating Razorpay order:", err);
+    res.status(500).send("Error creating Razorpay order");
+  }
 })
 
-
-app.get('/api/receipt/:trackingId', async (req, res) => {
+app.get("/api/receipt/:trackingId", async (req, res) => {
   const { trackingId } = req.params;
   // Fetch the parcel details using the trackingId
   const parcel = await Parcel.findOne({ tracking_id: trackingId });
   if (!parcel) {
-    return res.status(404).send('Parcel not found');
+    return res.status(404).send("Parcel not found");
   }
   // Create a PDF document
   const doc = new PDFDocument();
   // Set the response headers to indicate a file download
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="receipt-${trackingId}.pdf"`);
-  
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="receipt-${trackingId}.pdf"`
+  );
+
   // Pipe the PDF to the response stream
   doc.pipe(res);
   // Add content to the PDF
-  doc.fontSize(20).text(`Receipt for Parcel Booking`, { align: 'center' });
+  doc.fontSize(20).text(`Receipt for Parcel Booking`, { align: "center" });
   doc.moveDown();
   doc.fontSize(12).text(`Tracking ID: ${parcel.tracking_id}`);
   doc.text(`Sender Name: ${parcel.sender_name}`);

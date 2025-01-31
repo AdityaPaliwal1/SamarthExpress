@@ -12,6 +12,7 @@
     "mongoose": "^8.9.5",
     "nodemailer": "^6.9.16",
     "pdfkit": "^0.16.0",
-    "puppeteer": "^24.1.0"
+    "puppeteer": "^24.1.0",
+    "razorpay": "^2.9.5"
   }
 }
