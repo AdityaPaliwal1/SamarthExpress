@@ -38,6 +38,7 @@ const Tracking = ({ trackingID }: any) => {
       if (result?.created_at) {
         setCreatedAt(new Date(result.created_at));
       }
+    
     } catch (error) {
       console.error("Error fetching parcel details:", error);
     } finally {

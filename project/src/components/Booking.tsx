@@ -125,19 +125,21 @@ const Booking = ({ userRole }: { userRole: string }) => {
         parcel_type: formData.get("parcel_type") as string,
         description: formData.get("description") as string,
       };
-      
+
       let Actualamount = 0;
-      if(parcelData.weight <= 50){
+      if (parcelData.weight <= 50) {
         Actualamount = 100;
-      }
-      else{
+      } else {
         Actualamount = 100 + (parcelData.weight - 50) * 2;
       }
-      const paymentResponse = await fetch("http://localhost:5000/api/payment/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ declared_value: Actualamount }),
-      });
+      const paymentResponse = await fetch(
+        "http://localhost:5000/api/payment/order",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ declared_value: Actualamount }),
+        }
+      );
 
       if (!paymentResponse.ok) {
         throw new Error("Failed to create Razorpay order");
@@ -153,24 +155,29 @@ const Booking = ({ userRole }: { userRole: string }) => {
         description: "Parcel Booking Payment",
         order_id: order_id,
         handler: async (response: any) => {
-          const {razorpay_payment_id } = response;
+          const { razorpay_payment_id } = response;
 
-          const parcelResponse = await fetch("http://localhost:5000/api/parcels", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpay_payment_id, // Pass payment ID
-              trackingDetails: parcelData, // Pass parcel details
-            }),
-          });
+          const parcelResponse = await fetch(
+            "http://localhost:5000/api/parcels",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_payment_id, // Pass payment ID
+                trackingDetails: parcelData, // Pass parcel details
+              }),
+            }
+          );
 
           if (!parcelResponse.ok) {
             throw new Error("Parcel booking failed after payment");
           }
 
           const parcelDataRes = await parcelResponse.json();
-          toast.success(`Booking successful! Your tracking ID is: ${parcelDataRes.parcel.tracking_id}`);
-  
+          toast.success(
+            `Booking successful! Your tracking ID is: ${parcelDataRes.parcel.tracking_id}`
+          );
+
           setTrackingId(parcelDataRes.parcel.tracking_id);
           setbook(true);
           (e.target as HTMLFormElement).reset();
@@ -205,7 +212,9 @@ const Booking = ({ userRole }: { userRole: string }) => {
       if (result) {
         toast.success(`Parcel found with tracking ID: ${trackingId}`);
       }
+      
       setTrackingResult(result);
+
     } catch (err) {
       toast.error("Failed to fetch tracking information.");
       console.error(err);
