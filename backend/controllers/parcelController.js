@@ -16,7 +16,7 @@ exports.createParcel = async (req, res) => {
     const parcel = new Parcel({
       ...trackingDetails,
       tracking_id: trackingId,
-      razorpay_payment_id,
+      payment_id: razorpay_payment_id,
     });
     await parcel.save();
     res.json({

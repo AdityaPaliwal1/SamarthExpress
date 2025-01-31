@@ -15,7 +15,6 @@ const parcelRoutes = require("./routes/parcelRoutes");
 const emailRoutes = require("./routes/emailRoutes");
 const userRoutes = require("./routes/userRoutes");
 
-
 // Initialize App
 const app = express();
 dotenv.config();
@@ -35,9 +34,6 @@ app.use("/api/parcels", parcelRoutes); //for booking and tracking
 app.use("/api/send-email", emailRoutes); //for sending email
 app.use("/api", userRoutes); //for user registration and login
 
-
-
-
 app.use("/api/getAll", async (req, res) => {
   try {
     const allParcels = await Parcel.find();
@@ -54,12 +50,10 @@ app.use("/api/razorpay-key", async (req, res) => {
   } catch (err) {
     res.status(500).send("Error fetching Razorpay key");
   }
-}
-);
+});
 
-
-app.use ("/api/payment/order" , async(req,res)=>{
-  try{
+app.use("/api/payment/order", async (req, res) => {
+  try {
     const amount = req.body.declared_value * 100; // Convert to paise
     const currency = "INR";
 
@@ -77,12 +71,11 @@ app.use ("/api/payment/order" , async(req,res)=>{
       currency: razorpayOrder.currency,
       amount: razorpayOrder.amount,
     });
-  }
-  catch(err){
+  } catch (err) {
     console.error("Error creating Razorpay order:", err);
     res.status(500).send("Error creating Razorpay order");
   }
-})
+});
 
 app.get("/api/receipt/:trackingId", async (req, res) => {
   const { trackingId } = req.params;
@@ -106,6 +99,7 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
   doc.fontSize(20).text(`Receipt for Parcel Booking`, { align: "center" });
   doc.moveDown();
   doc.fontSize(12).text(`Tracking ID: ${parcel.tracking_id}`);
+  doc.fontSize(12).text(`Payment ID: ${parcel.payment_id}`);
   doc.text(`Sender Name: ${parcel.sender_name}`);
   doc.text(`Sender Phone: ${parcel.sender_phone}`);
   doc.text(`Sender City : ${parcel.sender_city}`);

@@ -125,11 +125,18 @@ const Booking = ({ userRole }: { userRole: string }) => {
         parcel_type: formData.get("parcel_type") as string,
         description: formData.get("description") as string,
       };
-
+      
+      let Actualamount = 0;
+      if(parcelData.weight <= 50){
+        Actualamount = 100;
+      }
+      else{
+        Actualamount = 100 + (parcelData.weight - 50) * 2;
+      }
       const paymentResponse = await fetch("http://localhost:5000/api/payment/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ declared_value: parcelData.declared_value }),
+        body: JSON.stringify({ declared_value: Actualamount }),
       });
 
       if (!paymentResponse.ok) {
@@ -438,7 +445,6 @@ const Booking = ({ userRole }: { userRole: string }) => {
                         <div className="space-y-6">
                           {/* Parcel tracking details */}
                           <Tracking trackingID={trackingId} />
-                          
                           <div className="border rounded-lg p-6">
                             <h3 className="text-xl font-semibold mb-4">
                               Parcel Information
