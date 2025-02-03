@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const PDFDocument = require("pdfkit");
 const Parcel = require("./models/Parcel");
 const bodyParser = require("body-parser");
+const path = require("path");
 const cors = require("cors");
 const razorpay = require("./utils/razorpay");
 
@@ -28,6 +29,7 @@ const io = new Server(server, {
 
 dotenv.config();
 
+const _dirname = path.resolve();
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -71,7 +73,6 @@ app.use("/api/razorpay-key", async (req, res) => {
   }
 });
 
-//make payment
 app.use("/api/payment/order", async (req, res) => {
   try {
     const amount = req.body.declared_value * 100; // Convert to paise
@@ -168,6 +169,11 @@ setInterval(updateDeliveryStatusAutomatically, 60 * 60 * 1000);
 
 // Start Server
 const PORT = process.env.PORT;
+
+app.use(express.static(path.join(_dirname , "/project/dist")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(_dirname ,"project","dist","index.html"));
+});
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`.yellow);

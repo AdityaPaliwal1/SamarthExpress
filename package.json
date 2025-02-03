@@ -1,7 +1,12 @@
 
 
 {
+   "scripts": {
+    "dev": "nodemon backend/app.js",
+    "build" : "npm install && npm install --prefix project && npm run build --prefix project",
+    "start": "nodemon backend/app.js"
 
+   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
