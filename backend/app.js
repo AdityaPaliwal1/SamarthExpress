@@ -120,6 +120,7 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
   doc.fontSize(20).text(`Receipt for Parcel Booking`, { align: "center" });
   doc.moveDown();
   doc.fontSize(12).text(`Tracking ID: ${parcel.tracking_id}`);
+  doc.fontSize(12).text(`Order ID: ${parcel.order_id}`);
   doc.fontSize(12).text(`Payment ID: ${parcel.payment_id}`);
   doc.text(`Sender Name: ${parcel.sender_name}`);
   doc.text(`Sender Phone: ${parcel.sender_phone}`);

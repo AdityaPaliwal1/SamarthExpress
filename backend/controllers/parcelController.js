@@ -3,7 +3,7 @@ require("dotenv").config();
 // Create Parcel
 exports.createParcel = async (req, res) => {
   try {
-    const { razorpay_payment_id, trackingDetails } = req.body;
+    const { razorpay_payment_id, trackingDetails  , razorpay_order_id } = req.body;
     if (!razorpay_payment_id) {
       return res.status(400).json({ error: "Payment ID is required" });
     }
@@ -12,6 +12,7 @@ exports.createParcel = async (req, res) => {
       ...trackingDetails,
       tracking_id: trackingId,
       payment_id: razorpay_payment_id,
+      order_id : razorpay_order_id
     });
     await parcel.save();
     res.json({
@@ -52,4 +53,3 @@ exports.updateDeliveryStatus = async (req, res) => {
 };
 
 // Generate PDF Receipt
-

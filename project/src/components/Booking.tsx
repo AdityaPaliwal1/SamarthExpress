@@ -90,25 +90,23 @@ const Booking = ({ userRole }: { userRole: string }) => {
   });
 
   useEffect(() => {
- 
-      socket.connect(); // Connect to the WebSocket server
-      console.log("Connected to WebSocket server");
-      // Listen for delivery status updates
-      socket.on("deliveryStatusUpdated", (updatedParcel: ParcelDetails) => {
-        setAllParcels((prevParcels) =>
-          prevParcels.map((parcel) =>
-            parcel.tracking_id === updatedParcel.tracking_id
-              ? updatedParcel
-              : parcel
-          )
-        );
-      });
+    socket.connect(); // Connect to the WebSocket server
+    console.log("Connected to WebSocket server");
+    // Listen for delivery status updates
+    socket.on("deliveryStatusUpdated", (updatedParcel: ParcelDetails) => {
+      setAllParcels((prevParcels) =>
+        prevParcels.map((parcel) =>
+          parcel.tracking_id === updatedParcel.tracking_id
+            ? updatedParcel
+            : parcel
+        )
+      );
+    });
 
-      // Cleanup on unmount
-      return () => {
-        socket.disconnect();
-      };
-    
+    // Cleanup on unmount
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const fetchAllParcels = async () => {
@@ -183,7 +181,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
         description: "Parcel Booking Payment",
         order_id: order_id,
         handler: async (response: any) => {
-          const { razorpay_payment_id } = response;
+          const { razorpay_payment_id, razorpay_order_id } = response;
 
           const parcelResponse = await fetch(
             "http://localhost:5000/api/parcels",
@@ -192,7 +190,8 @@ const Booking = ({ userRole }: { userRole: string }) => {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 razorpay_payment_id, // Pass payment ID
-                trackingDetails: parcelData, // Pass parcel details
+                trackingDetails: parcelData,
+                razorpay_order_id, // Pass parcel details
               }),
             }
           );

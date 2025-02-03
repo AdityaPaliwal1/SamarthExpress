@@ -15,7 +15,7 @@ const parcelSchema = new mongoose.Schema({
   description: String,
   tracking_id: { type: String, unique: true },
   created_at: { type: Date, default: new Date() },
-  order_id :{type:String ,unique:true},
+  order_id: { type: String, unique: true, default: "" },
   payment_id: { type: String, unique: true },
   delivered: { type: Boolean, default: false },
 });
