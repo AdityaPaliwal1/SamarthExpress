@@ -3,7 +3,7 @@ import "../index.css";
 
 async function getParcelDetails(trackingId: string) {
   const response = await fetch(
-    `http://localhost:5000/api/parcels/${trackingId}`
+    `https://samarthexpress.onrender.com/api/parcels/${trackingId}`
   );
   return response.json();
 }
@@ -12,7 +12,7 @@ async function getParcelDetails(trackingId: string) {
 const updateDeliveryStatus = async (trackingId: string, delivered: boolean) => {
   try {
     const response = await fetch(
-      `http://localhost:5000/api/parcels/${trackingId}/delivery`,
+      `https://samarthexpress.onrender.com/api/parcels/${trackingId}/delivery`,
       {
         method: "PATCH", // Use PATCH instead of PUT
         headers: { "Content-Type": "application/json" },
@@ -38,7 +38,6 @@ const Tracking = ({ trackingID }: any) => {
       if (result?.created_at) {
         setCreatedAt(new Date(result.created_at));
       }
-    
     } catch (error) {
       console.error("Error fetching parcel details:", error);
     } finally {

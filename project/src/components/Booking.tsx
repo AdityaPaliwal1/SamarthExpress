@@ -28,19 +28,23 @@ declare global {
 // }
 
 async function getRazorpayKey() {
-  const response = await fetch("http://localhost:5000/api/razorpay-key");
+  const response = await fetch(
+    "https://samarthexpress.onrender.com/api/razorpay-key"
+  );
   return response.json();
 }
 
 async function getParcelByTrackingId(trackingId: string) {
   const response = await fetch(
-    `http://localhost:5000/api/parcels/${trackingId}`
+    `https://samarthexpress.onrender.com/api/parcels/${trackingId}`
   );
   return response.json();
 }
 
 async function getAllParcels() {
-  const response = await fetch("http://localhost:5000/api/getAll");
+  const response = await fetch(
+    "https://samarthexpress.onrender.com/api/getAll"
+  );
   return response.json();
 }
 
@@ -85,7 +89,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
     });
   }, []);
 
-  const socket: Socket = io("http://localhost:5000", {
+  const socket: Socket = io("https://samarthexpress.onrender.com", {
     autoConnect: false, // Do not connect automatically
   });
 
@@ -159,7 +163,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
         Actualamount = 100 + (parcelData.weight - 50) * 2;
       }
       const paymentResponse = await fetch(
-        "http://localhost:5000/api/payment/order",
+        "https://samarthexpress.onrender.com/api/payment/order",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -184,7 +188,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
           const { razorpay_payment_id, razorpay_order_id } = response;
 
           const parcelResponse = await fetch(
-            "http://localhost:5000/api/parcels",
+            "https://samarthexpress.onrender.com/api/parcels",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -434,7 +438,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                       {book && (
                         <div className="mt-4">
                           <a
-                            href={`http://localhost:5000/api/receipt/${trackingId}`}
+                            href={`https://samarthexpress.onrender.com/api/receipt/${trackingId}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition duration-300"
@@ -534,7 +538,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                               {trackingId && (
                                 <div className="mt-4">
                                   <a
-                                    href={`http://localhost:5000/api/receipt/${trackingId}`}
+                                    href={`https://samarthexpress.onrender.com/api/receipt/${trackingId}`}
                                     download={`receipt-${trackingId}.pdf`}
                                     target="_blank"
                                     rel="noopener noreferrer"

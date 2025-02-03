@@ -22,7 +22,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Replace with your frontend URL
+    origin: "https://samarthexpress.onrender.com", // Replace with your frontend URL
     methods: ["GET", "POST"],
   },
 });
@@ -31,6 +31,10 @@ dotenv.config();
 
 const _dirname = path.resolve();
 // Middleware
+const CorsOptions = {
+  origin: "https://samarthexpress.onrender.com",
+  credentials: true,
+};
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -170,9 +174,9 @@ setInterval(updateDeliveryStatusAutomatically, 60 * 60 * 1000);
 // Start Server
 const PORT = process.env.PORT;
 
-app.use(express.static(path.join(_dirname , "/project/dist")));
+app.use(express.static(path.join(_dirname, "/project/dist")));
 app.get("*", (req, res) => {
-  res.sendFile(path.join(_dirname ,"project","dist","index.html"));
+  res.sendFile(path.join(_dirname, "project", "dist", "index.html"));
 });
 
 server.listen(PORT, () => {
