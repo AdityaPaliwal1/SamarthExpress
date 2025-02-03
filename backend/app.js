@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const http = require("http");
+const getStream = require("get-stream");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const PDFDocument = require("pdfkit");
@@ -112,6 +113,7 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
   }
   // Create a PDF document
   const doc = new PDFDocument();
+  const buffers = await getStream.buffer(doc);
   // Set the response headers to indicate a file download
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader(
@@ -142,6 +144,7 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
   doc.text(`Booked Time: ${parcel.created_at}`);
   // Finalize the PDF
   doc.end();
+  res.send(buffers);
 });
 
 // Socket.io
