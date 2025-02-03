@@ -1,13 +1,14 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const http = require("http");
+const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const PDFDocument = require("pdfkit");
-const fs = require("fs");
-const path = require("path");
 const Parcel = require("./models/Parcel");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const razorpay = require("./utils/razorpay");
+
 require("colors");
 
 // Import Routes
@@ -17,6 +18,14 @@ const userRoutes = require("./routes/userRoutes");
 
 // Initialize App
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173", // Replace with your frontend URL
+    methods: ["GET", "POST"],
+  },
+});
+
 dotenv.config();
 
 // Middleware
@@ -29,11 +38,20 @@ mongoose
   .then((e) => console.log("Connected to MongoDB".green.bold))
   .catch((err) => console.error(err).red);
 
+io.on("connection", (socket) => {
+  console.log("A client connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("A client disconnected:", socket.id);
+  });
+});
+
 // Routes Middleware
 app.use("/api/parcels", parcelRoutes); //for booking and tracking
 app.use("/api/send-email", emailRoutes); //for sending email
 app.use("/api", userRoutes); //for user registration and login
 
+//fetch all parcels
 app.use("/api/getAll", async (req, res) => {
   try {
     const allParcels = await Parcel.find();
@@ -44,6 +62,7 @@ app.use("/api/getAll", async (req, res) => {
   }
 });
 
+//fetch razorpay key
 app.use("/api/razorpay-key", async (req, res) => {
   try {
     res.json({ key: process.env.RAZORPAY_KEY_ID });
@@ -52,6 +71,7 @@ app.use("/api/razorpay-key", async (req, res) => {
   }
 });
 
+//make payment
 app.use("/api/payment/order", async (req, res) => {
   try {
     const amount = req.body.declared_value * 100; // Convert to paise
@@ -77,6 +97,7 @@ app.use("/api/payment/order", async (req, res) => {
   }
 });
 
+// display receipt
 app.get("/api/receipt/:trackingId", async (req, res) => {
   const { trackingId } = req.params;
   // Fetch the parcel details using the trackingId
@@ -116,6 +137,37 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
   // Finalize the PDF
   doc.end();
 });
+
+// Socket.io
+const updateDeliveryStatusAutomatically = async () => {
+  try {
+    const parcels = await Parcel.find({ delivered: false });
+
+    const now = new Date();
+    for (const parcel of parcels) {
+      const createdAt = new Date(parcel.created_at);
+      const elapsedHours = Math.floor(
+        (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
+      );
+
+      if (elapsedHours >= 24) {
+        parcel.delivered = true;
+        await parcel.save();
+        io.emit("deliveryStatusUpdated", parcel); // Notify all clients
+        console.log(`Parcel ${parcel.tracking_id} marked as delivered.`);
+      }
+    }
+  } catch (err) {
+    console.error("Error updating delivery status:", err);
+  }
+};
+
+// Schedule the task to run every hour
+setInterval(updateDeliveryStatusAutomatically, 60 * 60 * 1000);
+
 // Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`.yellow));
+const PORT = process.env.PORT;
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`.yellow);
+});

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Tracking from "./Tracking";
+import { io, Socket } from "socket.io-client";
 import {
   Package,
   Search,
@@ -73,6 +74,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
   useEffect(() => {
     if (userRole === "Admin") {
       fetchAllParcels();
+      setInterval(fetchAllParcels, 60000); // Fetch parcels every minute
     }
   }, [userRole]);
 
@@ -81,6 +83,32 @@ const Booking = ({ userRole }: { userRole: string }) => {
     getRazorpayKey().then((data) => {
       setRazorpayKey(data.key);
     });
+  }, []);
+
+  const socket: Socket = io("http://localhost:5000", {
+    autoConnect: false, // Do not connect automatically
+  });
+
+  useEffect(() => {
+ 
+      socket.connect(); // Connect to the WebSocket server
+      console.log("Connected to WebSocket server");
+      // Listen for delivery status updates
+      socket.on("deliveryStatusUpdated", (updatedParcel: ParcelDetails) => {
+        setAllParcels((prevParcels) =>
+          prevParcels.map((parcel) =>
+            parcel.tracking_id === updatedParcel.tracking_id
+              ? updatedParcel
+              : parcel
+          )
+        );
+      });
+
+      // Cleanup on unmount
+      return () => {
+        socket.disconnect();
+      };
+    
   }, []);
 
   const fetchAllParcels = async () => {
@@ -212,9 +240,8 @@ const Booking = ({ userRole }: { userRole: string }) => {
       if (result) {
         toast.success(`Parcel found with tracking ID: ${trackingId}`);
       }
-      
-      setTrackingResult(result);
 
+      setTrackingResult(result);
     } catch (err) {
       toast.error("Failed to fetch tracking information.");
       console.error(err);
@@ -528,7 +555,9 @@ const Booking = ({ userRole }: { userRole: string }) => {
               </>
             ) : userRole === "Admin" ? (
               <div className="p-6">
-                <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
+                <h2 className="text-2xl text-center font-bold mb-6 text-blue-400">
+                  ADMIN DASHBOARD
+                </h2>
                 <div className="overflow-x-auto">
                   <table className="min-w-full bg-white border border-gray-200">
                     <thead>
@@ -566,7 +595,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                             {parcel.parcel_type}
                           </td>
                           <td className="py-2 px-4 border-b">
-                            {new Date(parcel.created_at).toLocaleDateString()}
+                            {formatToIST(parcel.created_at).split(",")[0]}
                           </td>
                           <td className="py-2 px-4 border-b">
                             ₹{parcel.declared_value}
