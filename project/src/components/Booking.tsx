@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import * as XLSX from "xlsx";
 import Tracking from "./Tracking";
 import { io, Socket } from "socket.io-client";
 import {
@@ -126,6 +127,13 @@ const Booking = ({ userRole }: { userRole: string }) => {
   const formatToIST = (utcDate: string) => {
     const date = new Date(utcDate);
     return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  };
+
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(allParcels); // Convert the data to Excel sheet
+    const workbook = XLSX.utils.book_new(); // Create a new workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Parcels"); // Append the sheet to the workbook
+    XLSX.writeFile(workbook, "parcels.xlsx"); // Download the Excel file
   };
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
@@ -561,6 +569,12 @@ const Booking = ({ userRole }: { userRole: string }) => {
                 <h2 className="text-2xl text-center font-bold mb-6 text-blue-400">
                   ADMIN DASHBOARD
                 </h2>
+                <button
+                  onClick={downloadExcel}
+                  className="mb-4 p-2 bg-blue-500 text-white rounded"
+                >
+                  Download Excel
+                </button>
                 <div className="overflow-x-auto">
                   <table className="min-w-full bg-white border border-gray-200">
                     <thead>
