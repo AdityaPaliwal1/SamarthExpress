@@ -45,13 +45,13 @@ mongoose
   .then((e) => console.log("Connected to MongoDB".green.bold))
   .catch((err) => console.error(err).red);
 
-io.on("connection", (socket) => {
-  console.log("A client connected:", socket.id);
+// io.on("connection", (socket) => {
+//   console.log("A client connected:", socket.id);
 
-  socket.on("disconnect", () => {
-    console.log("A client disconnected:", socket.id);
-  });
-});
+//   socket.on("disconnect", () => {
+//     console.log("A client disconnected:", socket.id);
+//   });
+// });
 
 // Routes Middleware
 app.use("/api/parcels", parcelRoutes); //for booking and tracking
@@ -152,28 +152,28 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
   }
 });
 // Socket.io
-const updateDeliveryStatusAutomatically = async () => {
-  try {
-    const parcels = await Parcel.find({ delivered: false });
+// const updateDeliveryStatusAutomatically = async () => {
+//   try {
+//     const parcels = await Parcel.find({ delivered: false });
 
-    const now = new Date();
-    for (const parcel of parcels) {
-      const createdAt = new Date(parcel.created_at);
-      const elapsedHours = Math.floor(
-        (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
-      );
+//     const now = new Date();
+//     for (const parcel of parcels) {
+//       const createdAt = new Date(parcel.created_at);
+//       const elapsedHours = Math.floor(
+//         (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
+//       );
 
-      if (elapsedHours >= 24) {
-        parcel.delivered = true;
-        await parcel.save();
-        io.emit("deliveryStatusUpdated", parcel); // Notify all clients
-        console.log(`Parcel ${parcel.tracking_id} marked as delivered.`);
-      }
-    }
-  } catch (err) {
-    console.error("Error updating delivery status:", err);
-  }
-};
+//       if (elapsedHours >= 24) {
+//         parcel.delivered = true;
+//         await parcel.save();
+//         io.emit("deliveryStatusUpdated", parcel); // Notify all clients
+//         console.log(`Parcel ${parcel.tracking_id} marked as delivered.`);
+//       }
+//     }
+//   } catch (err) {
+//     console.error("Error updating delivery status:", err);
+//   }
+// };
 
 // Schedule the task to run every hour
 setInterval(updateDeliveryStatusAutomatically, 60 * 60 * 1000);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import Hero from "./components/Hero";
-import Booking from "./components/Booking";
+// import Booking from "./components/Booking";
 import Services from "./components/Services";
 import Contacts from "./components/Contact";
 import Footer from "./Layouts/Footer";
@@ -36,7 +36,7 @@ function App() {
       <Hero />
 
       {/* Booking Section */}
-      <Booking />
+      {/* <Booking /> */}
 
       {/* Services Section */}
       <Services />

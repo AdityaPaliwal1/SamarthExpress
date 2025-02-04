@@ -69,6 +69,9 @@ const Booking = ({ userRole }: { userRole: string }) => {
   const [activeTab, setActiveTab] = useState("book");
   const [trackingId, setTrackingId] = useState("");
   const [error, setError] = useState(null);
+  const [date, setDate] = useState(
+    () => new Date().toISOString().split("T")[0]
+  );
   const [loading, setLoading] = useState(false);
   const [trackingResult, setTrackingResult] = useState<ParcelDetails | null>(
     null
@@ -79,7 +82,8 @@ const Booking = ({ userRole }: { userRole: string }) => {
   useEffect(() => {
     if (userRole === "Admin") {
       fetchAllParcels();
-      setInterval(fetchAllParcels, 60000); // Fetch parcels every minute
+      setInterval(fetchAllParcels, 60000);
+      // Fetch parcels every minute
     }
   }, [userRole]);
 
@@ -90,33 +94,59 @@ const Booking = ({ userRole }: { userRole: string }) => {
     });
   }, []);
 
-  const socket: Socket = io("https://samarthexpress.onrender.com", {
-    autoConnect: false, // Do not connect automatically
-  });
+  // const socket: Socket = io("https://samarthexpress.onrender.com", {
+  //   autoConnect: false, // Do not connect automatically
+  // });
 
-  useEffect(() => {
-    socket.connect(); // Connect to the WebSocket server
-    console.log("Connected to WebSocket server");
-    // Listen for delivery status updates
-    socket.on("deliveryStatusUpdated", (updatedParcel: ParcelDetails) => {
-      setAllParcels((prevParcels) =>
-        prevParcels.map((parcel) =>
-          parcel.tracking_id === updatedParcel.tracking_id
-            ? updatedParcel
-            : parcel
-        )
-      );
+  // useEffect(() => {
+  //   socket.connect(); // Connect to the WebSocket server
+  //   console.log("Connected to WebSocket server");
+  //   // Listen for delivery status updates
+  //   socket.on("deliveryStatusUpdated", (updatedParcel: ParcelDetails) => {
+  //     setAllParcels((prevParcels) =>
+  //       prevParcels.map((parcel) =>
+  //         parcel.tracking_id === updatedParcel.tracking_id
+  //           ? updatedParcel
+  //           : parcel
+  //       )
+  //     );
+  //   });
+
+  //   // Cleanup on unmount
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, []);
+
+  const filterParcelsbyDate = (
+    parcels: ParcelDetails[],
+    selectedDate: string
+  ) => {
+    if (selectedDate === "") {
+      return parcels;
+    }
+    return parcels.filter((parcel) => {
+      const parcelDate = new Date(parcel.created_at)
+        .toISOString()
+        .split("T")[0];
+      return parcelDate === selectedDate;
     });
-
-    // Cleanup on unmount
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  };
+  const filteredParcels = filterParcelsbyDate(allParcels, date);
 
   const fetchAllParcels = async () => {
+    const now = new Date();
     try {
       const parcels = await getAllParcels();
+      for (const parcel of parcels) {
+        const createdAt = new Date(parcel.created_at);
+        const elapsedHours = Math.floor(
+          (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
+        );
+        if (elapsedHours >= 24) {
+          parcel.delivered = true;
+        }
+      }
       setAllParcels(parcels);
     } catch (err) {
       toast.error("Failed to fetch parcels.");
@@ -130,7 +160,9 @@ const Booking = ({ userRole }: { userRole: string }) => {
   };
 
   const downloadExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(allParcels); // Convert the data to Excel sheet
+    const worksheet = XLSX.utils.json_to_sheet(
+      filterParcelsbyDate(allParcels, date)
+    ); // Convert the data to Excel sheet
     const workbook = XLSX.utils.book_new(); // Create a new workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, "Parcels"); // Append the sheet to the workbook
     XLSX.writeFile(workbook, "parcels.xlsx"); // Download the Excel file
@@ -575,6 +607,12 @@ const Booking = ({ userRole }: { userRole: string }) => {
                 >
                   Download Excel
                 </button>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="p-2 rounded border mx-3 cursor-pointer"
+                />
                 <div className="overflow-x-auto">
                   <table className="min-w-full bg-white border border-gray-200">
                     <thead>
@@ -591,7 +629,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {allParcels.map((parcel) => (
+                      {filteredParcels.map((parcel) => (
                         <tr
                           key={parcel.tracking_id}
                           className="hover:bg-gray-50"
