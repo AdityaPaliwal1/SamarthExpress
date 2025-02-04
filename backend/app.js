@@ -176,7 +176,7 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
 // };
 
 // Schedule the task to run every hour
-setInterval(updateDeliveryStatusAutomatically, 60 * 60 * 1000);
+// setInterval(updateDeliveryStatusAutomatically, 60 * 60 * 1000);
 
 // Start Server
 const PORT = process.env.PORT;
