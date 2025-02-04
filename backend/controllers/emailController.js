@@ -6,14 +6,16 @@ const express = require("express");
 const app = express();
 
 app.set("view engine", "ejs");
-app.set("views", path.join(process.cwd(), "views"));
+app.set("views", path.join(__dirname, "..", "views"));
+
 
 exports.sendEmail = async (req, res) => {
   const { name, email } = req.body;
 
-  const templatepath = path.join(process.cwd(), "views", "emailTemplate.ejs");
+  const templatePath = path.join(__dirname, "..", "views", "emailTemplate.ejs");
 
-  const messageTemplate = await ejs.renderFile(templatepath, {
+
+  const messageTemplate = await ejs.renderFile(templatePath, {
     name,
   });
 
