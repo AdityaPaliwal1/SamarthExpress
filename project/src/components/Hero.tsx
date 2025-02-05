@@ -10,7 +10,7 @@ const Hero = () => {
   interface UserDetails {
     name: string;
     email: string;
-    role : string;
+    role: string;
   }
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -49,14 +49,17 @@ const Hero = () => {
   //  Login Handler
   const handleLogin = async () => {
     try {
-      const response = await fetch("https://samarthexpress.onrender.com/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
+      const response = await fetch(
+        "https://samarthexpress.onrender.com/api/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
+        }
+      );
 
       const data = await response.json();
       console.log("login data ", data);
@@ -84,16 +87,19 @@ const Hero = () => {
   // Register Handler
   const handleRegister = async () => {
     try {
-      const response = await fetch("https://samarthexpress.onrender.com/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name,
-          email: email,
-          password: password,
-          role: role,
-        }),
-      });
+      const response = await fetch(
+        "https://samarthexpress.onrender.com/api/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            password: password,
+            role: role,
+          }),
+        }
+      );
 
       if (response.ok) {
         // Success: Notify user and reset fields
@@ -193,21 +199,23 @@ const Hero = () => {
               Welcome , {userdetails.name}👋
             </p>
           )}
-        {islogin && userdetails?.role === "Admin" ? (
-    <a
-    href="#booking" // Replace with the actual link to the admin dashboard
-    className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
-  >
-    Go to Dashboard <Package className="h-5 w-5 text-white ml-1 font-bold" />
-  </a>
-  ) : (
-      <a
-        href="#booking" // Replace with the actual link to the admin dashboard
-        className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
-      >
-        Book Parcel <Package className="h-5 w-5 text-white ml-1 font-bold" />
-      </a>    
-  )}
+          {islogin && userdetails?.role === "Admin" ? (
+            <a
+              href="#booking" // Replace with the actual link to the admin dashboard
+              className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
+            >
+              Go to Dashboard{" "}
+              <Package className="h-5 w-5 text-white ml-1 font-bold" />
+            </a>
+          ) : (
+            <a
+              href="#booking" // Replace with the actual link to the admin dashboard
+              className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
+            >
+              Book Parcel{" "}
+              <Package className="h-5 w-5 text-white ml-1 font-bold" />
+            </a>
+          )}
         </div>
       </header>
 
@@ -251,7 +259,7 @@ const Hero = () => {
               </a>
             ) : (
               <div className="flex items-center space-x-2">
-               <div>
+                <div>
                   <Avatar
                     name={userdetails?.name || "User"}
                     size="30"
@@ -400,7 +408,7 @@ const Hero = () => {
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
                 >
                   <option value="Customer">Customer</option>
-                  <option value="Admin">Admin</option>
+                  {/* <option value="Admin">Admin</option> */}
                 </select>
               </div>
               <button
@@ -426,7 +434,7 @@ const Hero = () => {
               <X className="h-6 w-6" />
             </button>
             <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center  text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
-               User Profile
+              User Profile
             </h3>
             <div className="flex gap-2">
               <span>Name:</span>
@@ -437,18 +445,18 @@ const Hero = () => {
               <p className="font-bold">{userdetails?.email}</p>
             </div>
             <div>
-            <button
-              className="w-full bg-blue-500 text-white px-4 py-2 mt-3 rounded hover:bg-blue-600 transition duration-300 flex items-center justify-center"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5 mr-2" />
-              Logout
-            </button>
+              <button
+                className="w-full bg-blue-500 text-white px-4 py-2 mt-3 rounded hover:bg-blue-600 transition duration-300 flex items-center justify-center"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                Logout
+              </button>
             </div>
           </div>
         </div>
       )}
-     <Booking userRole={userdetails?.role || "Customer"} />
+      <Booking userRole={userdetails?.role || "Customer"} />
     </>
   );
 };

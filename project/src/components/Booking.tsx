@@ -78,6 +78,8 @@ const Booking = ({ userRole }: { userRole: string }) => {
   );
   const [book, setbook] = useState(false);
   const [allParcels, setAllParcels] = useState<ParcelDetails[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  
 
   useEffect(() => {
     if (userRole === "Admin") {
@@ -154,6 +156,27 @@ const Booking = ({ userRole }: { userRole: string }) => {
     }
   };
 
+  // Calculate the index of the first and last item on the current page
+  const itemsPerPage = 10;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredParcels.slice(indexOfFirstItem, indexOfLastItem);
+  const npage = Math.ceil(filteredParcels.length / itemsPerPage);
+
+  const handlePrevChange = () => {
+     if(currentPage !== 1){
+       setCurrentPage(currentPage - 1);
+     }
+  };
+
+
+  const handleNextChange = () => {
+    if(currentPage !== npage){
+      setCurrentPage(currentPage + 1);
+    }
+  }
+
+  // Function to handle items per page change
   const formatToIST = (utcDate: string) => {
     const date = new Date(utcDate);
     return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
@@ -629,7 +652,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredParcels.map((parcel) => (
+                      {currentItems.map((parcel) => (
                         <tr
                           key={parcel.tracking_id}
                           className="hover:bg-gray-50"
@@ -668,6 +691,33 @@ const Booking = ({ userRole }: { userRole: string }) => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+                {/* Pagination Controls */}
+                <div className="flex justify-end items-center mt-4">
+                 
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handlePrevChange()}
+                      disabled={currentPage === 1 || currentItems.length === 0}
+                      className="p-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-gray-700">
+                      Page {currentPage} of{" "}
+                      {npage}
+                    </span>
+                    <button
+                      onClick={() => handleNextChange()}
+                      disabled={
+                        currentPage ===
+                        npage || currentItems.length === 0
+                      }
+                      className="p-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : null}
