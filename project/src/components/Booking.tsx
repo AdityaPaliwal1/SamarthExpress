@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import * as XLSX from "xlsx";
 import Tracking from "./Tracking";
-import { io, Socket } from "socket.io-client";
+import { Country, State, City } from "country-state-city";
 import {
   Package,
   Search,
@@ -12,21 +11,13 @@ import {
   Box,
   Loader2,
 } from "lucide-react";
+import AdminReports from "./AdminReports";
 
 declare global {
   interface Window {
     Razorpay: any;
   }
 }
-
-// async function createParcel(parcelData: any) {
-//   const response = await fetch("http://localhost:5000/api/parcels", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify(parcelData),
-//   });
-//   return response.json();
-// }
 
 async function getRazorpayKey() {
   const response = await fetch(
@@ -38,13 +29,6 @@ async function getRazorpayKey() {
 async function getParcelByTrackingId(trackingId: string) {
   const response = await fetch(
     `https://samarthexpress.onrender.com/api/parcels/${trackingId}`
-  );
-  return response.json();
-}
-
-async function getAllParcels() {
-  const response = await fetch(
-    "https://samarthexpress.onrender.com/api/getAll"
   );
   return response.json();
 }
@@ -65,29 +49,33 @@ const Booking = ({ userRole }: { userRole: string }) => {
     created_at: string;
     delivered: boolean;
   }
+  interface CityType {
+    name: string;
+    isoCode: string;
+  }
+
+  interface StateType {
+    name: string;
+    isoCode: string;
+    countryIsoCode: string;
+  }
   const [razorpayKey, setRazorpayKey] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("book");
   const [trackingId, setTrackingId] = useState("");
   const [error, setError] = useState(null);
-  const [date, setDate] = useState(
-    () => new Date().toISOString().split("T")[0]
-  );
   const [loading, setLoading] = useState(false);
   const [trackingResult, setTrackingResult] = useState<ParcelDetails | null>(
     null
   );
   const [book, setbook] = useState(false);
-  const [allParcels, setAllParcels] = useState<ParcelDetails[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  
+  const [countries, setCountries] = useState(Country.getAllCountries());
+  const [states, setStates] = useState<StateType[]>([]);
+  const [cities, setCities] = useState<CityType[]>([]);
 
-  useEffect(() => {
-    if (userRole === "Admin") {
-      fetchAllParcels();
-      setInterval(fetchAllParcels, 60000);
-      // Fetch parcels every minute
-    }
-  }, [userRole]);
+  const [selectedCountry, setSelectedCountry] = useState([]);
+  const [selectedState, setSelectedState] = useState<StateType[]>([]);
+  const [SenderCity, setSenderCity] = useState("");
+  const [ReceiverCity, setReceiverCity] = useState("");
 
   useEffect(() => {
     // Fetch Razorpay Key ID when the component mounts
@@ -96,99 +84,19 @@ const Booking = ({ userRole }: { userRole: string }) => {
     });
   }, []);
 
-  // const socket: Socket = io("https://samarthexpress.onrender.com", {
-  //   autoConnect: false, // Do not connect automatically
-  // });
-
-  // useEffect(() => {
-  //   socket.connect(); // Connect to the WebSocket server
-  //   console.log("Connected to WebSocket server");
-  //   // Listen for delivery status updates
-  //   socket.on("deliveryStatusUpdated", (updatedParcel: ParcelDetails) => {
-  //     setAllParcels((prevParcels) =>
-  //       prevParcels.map((parcel) =>
-  //         parcel.tracking_id === updatedParcel.tracking_id
-  //           ? updatedParcel
-  //           : parcel
-  //       )
-  //     );
-  //   });
-
-  //   // Cleanup on unmount
-  //   return () => {
-  //     socket.disconnect();
-  //   };
-  // }, []);
-
-  const filterParcelsbyDate = (
-    parcels: ParcelDetails[],
-    selectedDate: string
-  ) => {
-    if (selectedDate === "") {
-      return parcels;
-    }
-    return parcels.filter((parcel) => {
-      const parcelDate = new Date(parcel.created_at)
-        .toISOString()
-        .split("T")[0];
-      return parcelDate === selectedDate;
-    });
+  const handleCountryChange = (country: any) => {
+    setSelectedCountry(country);
+    setStates(State.getStatesOfCountry(country.isoCode));
+    setCities([]);
   };
-  const filteredParcels = filterParcelsbyDate(allParcels, date);
-
-  const fetchAllParcels = async () => {
-    const now = new Date();
-    try {
-      const parcels = await getAllParcels();
-      for (const parcel of parcels) {
-        const createdAt = new Date(parcel.created_at);
-        const elapsedHours = Math.floor(
-          (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
-        );
-        if (elapsedHours >= 24) {
-          parcel.delivered = true;
-        }
-      }
-      setAllParcels(parcels);
-    } catch (err) {
-      toast.error("Failed to fetch parcels.");
-      console.error(err);
-    }
+  const handleStateChange = (state: StateType) => {
+    setSelectedState(state);
+    setCities(City.getCitiesOfState(selectedCountry.isoCode, state.isoCode));
   };
-
-  // Calculate the index of the first and last item on the current page
-  const itemsPerPage = 10;
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredParcels.slice(indexOfFirstItem, indexOfLastItem);
-  const npage = Math.ceil(filteredParcels.length / itemsPerPage);
-
-  const handlePrevChange = () => {
-     if(currentPage !== 1){
-       setCurrentPage(currentPage - 1);
-     }
-  };
-
-
-  const handleNextChange = () => {
-    if(currentPage !== npage){
-      setCurrentPage(currentPage + 1);
-    }
-  }
-
   // Function to handle items per page change
   const formatToIST = (utcDate: string) => {
     const date = new Date(utcDate);
     return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
-  };
-
-  const downloadExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      filterParcelsbyDate(allParcels, date)
-    ); // Convert the data to Excel sheet
-    const workbook = XLSX.utils.book_new(); // Create a new workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Parcels"); // Append the sheet to the workbook
-    XLSX.writeFile(workbook, "parcels.xlsx"); // Download the Excel file
   };
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
@@ -196,6 +104,11 @@ const Booking = ({ userRole }: { userRole: string }) => {
     setLoading(true);
     setError(null);
 
+    if (!localStorage.getItem("user_details")) {
+      toast.error("Please Log in to book a parcel.");
+      setLoading(false);
+      return;
+    }
     if (!razorpayKey) {
       toast.error("Razorpay key not available. Please try again later.");
       setLoading(false);
@@ -208,11 +121,11 @@ const Booking = ({ userRole }: { userRole: string }) => {
         sender_name: formData.get("sender_name") as string,
         sender_phone: formData.get("sender_phone") as string,
         sender_address: formData.get("sender_address") as string,
-        sender_city: formData.get("sender_city") as string,
+        sender_city: SenderCity,
         receiver_name: formData.get("receiver_name") as string,
         receiver_phone: formData.get("receiver_phone") as string,
         receiver_address: formData.get("receiver_address") as string,
-        receiver_city: formData.get("receiver_city") as string,
+        receiver_city: ReceiverCity,
         weight: Number(formData.get("weight")),
         declared_value: Number(formData.get("declared_value")),
         parcel_type: formData.get("parcel_type") as string,
@@ -383,13 +296,75 @@ const Booking = ({ userRole }: { userRole: string }) => {
                             className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
                             required
                           />
-                          <input
-                            name="sender_city"
-                            type="text"
-                            placeholder="Sender's City"
-                            className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
-                            required
-                          />
+                          <div className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500">
+                            <select
+                              className="w-full text-gray-400"
+                              name="sender_country"
+                              onChange={(e) =>
+                                handleCountryChange(
+                                  countries.find(
+                                    (c) => c.isoCode === e.target.value
+                                  )
+                                )
+                              }
+                            >
+                              <option selected value="">
+                                Select Country
+                              </option>
+                              {countries.map((Country) => (
+                                <option
+                                  key={Country.isoCode}
+                                  value={Country.isoCode}
+                                >
+                                  {Country.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500">
+                            <select
+                              className="w-full text-gray-400"
+                              name="sender_state"
+                              disabled={selectedCountry === null}
+                              onChange={(e) => {
+                                const selectedState =
+                                  states.find(
+                                    (s) => s.isoCode === e.target.value
+                                  ) || null;
+                                handleStateChange(selectedState);
+                              }}
+                            >
+                              <option selected value="">
+                                Select State
+                              </option>
+                              {states.map((State) => (
+                                <option
+                                  key={State.isoCode}
+                                  value={State.isoCode}
+                                >
+                                  {State.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500">
+                            <select
+                              className="w-full text-gray-400"
+                              name="sender_city"
+                              value={SenderCity}
+                              onChange={(e) => setSenderCity(e.target.value)}
+                              disabled={selectedState === null}
+                            >
+                              <option selected value="">
+                                Select City
+                              </option>
+                              {cities.map((City) => (
+                                <option key={City.name} value={City.name}>
+                                  {City.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                           <textarea
                             name="sender_address"
                             placeholder="Pickup Address"
@@ -419,13 +394,75 @@ const Booking = ({ userRole }: { userRole: string }) => {
                             className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
                             required
                           />
-                          <input
-                            name="receiver_city"
-                            type="text"
-                            placeholder="Receiver's City"
-                            className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500"
-                            required
-                          />
+                          <div className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500">
+                            <select
+                              className="w-full text-gray-400"
+                              name="sender_country"
+                              onChange={(e) =>
+                                handleCountryChange(
+                                  countries.find(
+                                    (c) => c.isoCode === e.target.value
+                                  )
+                                )
+                              }
+                            >
+                              <option selected value="">
+                                Select Country
+                              </option>
+                              {countries.map((Country) => (
+                                <option
+                                  key={Country.isoCode}
+                                  value={Country.isoCode}
+                                >
+                                  {Country.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500">
+                            <select
+                              className="w-full text-gray-400"
+                              name="sender_state"
+                              disabled={selectedCountry === null}
+                              onChange={(e) =>
+                                handleStateChange(
+                                  states.find(
+                                    (s) => s.isoCode === e.target.value
+                                  )
+                                )
+                              }
+                            >
+                              <option selected value="">
+                                Select State
+                              </option>
+                              {states.map((State) => (
+                                <option
+                                  key={State.isoCode}
+                                  value={State.isoCode}
+                                >
+                                  {State.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-500">
+                            <select
+                              className="w-full text-gray-400"
+                              name="receiver_city"
+                              value={ReceiverCity}
+                              onChange={(e) => setReceiverCity(e.target.value)}
+                              disabled={selectedState === null}
+                            >
+                              <option selected value="">
+                                Select City
+                              </option>
+                              {cities.map((City) => (
+                                <option key={City.name} value={City.name}>
+                                  {City.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                           <textarea
                             name="receiver_address"
                             placeholder="Delivery Address"
@@ -620,106 +657,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                 </div>
               </>
             ) : userRole === "Admin" ? (
-              <div className="p-6">
-                <h2 className="text-2xl text-center font-bold mb-6 text-blue-400">
-                  ADMIN DASHBOARD
-                </h2>
-                <button
-                  onClick={downloadExcel}
-                  className="mb-4 p-2 bg-blue-500 text-white rounded"
-                >
-                  Download Excel
-                </button>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="p-2 rounded border mx-3 cursor-pointer"
-                />
-                <div className="overflow-x-auto">
-                  <table className="min-w-full bg-white border border-gray-200">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="py-2 px-4 border-b">Sender</th>
-                        <th className="py-2 px-4 border-b">Receiver</th>
-                        <th className="py-2 px-4 border-b">Sender City</th>
-                        <th className="py-2 px-4 border-b">Receiver City</th>
-                        <th className="py-2 px-4 border-b">Parcel Type</th>
-                        <th className="py-2 px-4 border-b">Date</th>
-                        <th className="py-2 px-4 border-b">Amount</th>
-                        <th className="py-2 px-4 border-b">Delivered</th>{" "}
-                        {/* New Column */}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentItems.map((parcel) => (
-                        <tr
-                          key={parcel.tracking_id}
-                          className="hover:bg-gray-50"
-                        >
-                          <td className="py-2 px-4 border-b">
-                            {parcel.sender_name}
-                          </td>
-                          <td className="py-2 px-4 border-b">
-                            {parcel.receiver_name}
-                          </td>
-                          <td className="py-2 px-4 border-b">
-                            {parcel.sender_city}
-                          </td>
-                          <td className="py-2 px-4 border-b">
-                            {parcel.receiver_city}
-                          </td>
-                          <td className="py-2 px-4 border-b">
-                            {parcel.parcel_type}
-                          </td>
-                          <td className="py-2 px-4 border-b">
-                            {formatToIST(parcel.created_at).split(",")[0]}
-                          </td>
-                          <td className="py-2 px-4 border-b">
-                            ₹{parcel.declared_value}
-                          </td>
-                          <td className="py-2 px-4 border-b">
-                            {parcel.delivered ? (
-                              <span className="text-green-600">Delivered</span>
-                            ) : (
-                              <span className="text-red-600">
-                                Not Delivered
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {/* Pagination Controls */}
-                <div className="flex justify-end items-center mt-4">
-                 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handlePrevChange()}
-                      disabled={currentPage === 1 || currentItems.length === 0}
-                      className="p-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-                    >
-                      Previous
-                    </button>
-                    <span className="text-sm text-gray-700">
-                      Page {currentPage} of{" "}
-                      {npage}
-                    </span>
-                    <button
-                      onClick={() => handleNextChange()}
-                      disabled={
-                        currentPage ===
-                        npage || currentItems.length === 0
-                      }
-                      className="p-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <AdminReports userRole={userRole} />
             ) : null}
           </div>
         </div>
