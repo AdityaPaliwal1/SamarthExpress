@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
+
 async function getAllParcels() {
   const response = await fetch(
     "http://localhost:5000/api/getAll"
@@ -79,16 +80,16 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
     return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   };
 
-   const downloadExcel = () => {
-      const worksheet = XLSX.utils.json_to_sheet(
-        filterParcelsbyDate(allParcels, date)
-      ); // Convert the data to Excel sheet
-      const workbook = XLSX.utils.book_new(); // Create a new workbook
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Parcels"); // Append the sheet to the workbook
-      XLSX.writeFile(workbook, "parcels.xlsx"); // Download the Excel file
-    };
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      filterParcelsbyDate(allParcels, date)
+    ); // Convert the data to Excel sheet
+    const workbook = XLSX.utils.book_new(); // Create a new workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Parcels"); // Append the sheet to the workbook
+    XLSX.writeFile(workbook, "parcels.xlsx"); // Download the Excel file
+  };
 
-    const itemsPerPage = 10;
+  const itemsPerPage = 10;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredParcels.slice(indexOfFirstItem, indexOfLastItem);
@@ -111,7 +112,7 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
     <>
       <div className="p-6">
         <h2 className="text-2xl text-center font-bold mb-6 text-blue-400">
-          BOOKING RECORDS
+          USER BOOKING RECORDS
         </h2>
         <button
           onClick={downloadExcel}

@@ -1,8 +1,15 @@
 const express = require("express");
-const {login , register} = require("../controllers/userController");
+const UserController = require("../controllers/UserController");
+
 const router = express.Router();
 
-router.post("/login", login);
-router.post("/register", register);
+// Register route
+router.post("/register", UserController.register);
 
-module.exports = router; 
+// Login route
+router.post("/login", UserController.login);
+
+// Get user role route (only accessible by admins)
+
+
+module.exports = router;

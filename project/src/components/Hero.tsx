@@ -2,32 +2,38 @@ import React, { useState, useEffect } from "react";
 import Avatar from "react-avatar";
 import { FaGoogle } from "react-icons/fa";
 import { X } from "lucide-react";
+import { Link } from "react-router-dom";
+import Cookies from "js-cookie";
 import "../index.css";
 import { Truck, Package, LogOut, Menu } from "lucide-react";
 import { toast } from "react-toastify";
 import Booking from "./Booking";
+import Services from "./Services";
+import Contact from "./Contact";
+
 const Hero = () => {
   interface UserDetails {
     name: string;
     email: string;
     role: string;
   }
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("Customer");
-  const [islogin, setLogin] = useState(false);
-  const [userdetails, setUserDetails] = useState<UserDetails | null>(null);
-  const [ProfileModalOpen, setProfileModalOpen] = useState(false);
+  const [isLogin, setLogin] = useState(false);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt_token");
+    const token = Cookies.get("jwt_token");
     if (token) {
       setLogin(true);
-      const user = localStorage.getItem("user_details");
+      const user = Cookies.get("user_details");
       if (user) {
         try {
           setUserDetails(JSON.parse(user)); // Safe parsing
@@ -36,21 +42,22 @@ const Hero = () => {
         }
       }
     }
-  }, []);
+  }, [isLogin]);
 
   const handleLogout = () => {
-    localStorage.removeItem("jwt_token");
-    localStorage.removeItem("user_details"); // Remove token from localStorage
+    Cookies.remove("jwt_token");
+    Cookies.remove("user_details"); // Remove user data from cookies
     setLogin(false); // Set login state to false
     setUserDetails(null);
     setProfileModalOpen(false);
     toast.success("Logged out successfully!");
   };
-  //  Login Handler
+
+  // Login Handler
   const handleLogin = async () => {
     try {
       const response = await fetch(
-        "https://samarthexpress.onrender.com/api/login",
+        "http://localhost:5000/api/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -66,8 +73,8 @@ const Hero = () => {
 
       if (response.ok) {
         // Success: Notify user and reset fields
-        localStorage.setItem("jwt_token", data.token);
-        localStorage.setItem("user_details", JSON.stringify(data.user)); // Store user details
+        Cookies.set("jwt_token", data.token, { expires: 7 }); // Set JWT token in cookies
+        Cookies.set("user_details", JSON.stringify(data.user), { expires: 7 }); // Set user details in cookies
         setUserDetails(data.user); // Update state with user details
         toast.success("Login successful!");
         setEmail("");
@@ -80,7 +87,7 @@ const Hero = () => {
       }
     } catch (error) {
       // Handle any network or server errors
-      toast.error("Login Failed , Check Credentials ");
+      toast.error("Login Failed, Check Credentials ");
     }
   };
 
@@ -88,7 +95,7 @@ const Hero = () => {
   const handleRegister = async () => {
     try {
       const response = await fetch(
-        "https://samarthexpress.onrender.com/api/register",
+        "http://localhost:5000/api/register",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -101,19 +108,21 @@ const Hero = () => {
         }
       );
 
+      const data = await response.json();
+      console.log("Registered data ", data);
       if (response.ok) {
         // Success: Notify user and reset fields
         toast.success("Register successful!");
         setEmail("");
         setPassword("");
         setName("");
-
         setRegisterModalOpen(false);
       } else {
         // Error: Notify user
+        console.log(response);
         toast.error("Register failed, please try again.");
       }
-    } catch (e) {
+    } catch (err) {
       toast.error("Failed , Check Credentials ");
     }
   };
@@ -142,16 +151,29 @@ const Hero = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-8">
-            <a href="#booking" className="text-white hover:text-blue-400">
-              Book Parcel
-            </a>
+            {userDetails?.role === "Admin" ? (
+              <a href="#booking" className="text-white hover:text-blue-400">
+                Admin Reports
+              </a>
+            ) : userDetails?.role === "Customer" ? (
+              <Link
+                to="/user-reports"
+                className="text-white hover:text-blue-400"
+              >
+                Reports
+              </Link>
+            ) : (
+              <Link to="/" className="text-white hover:text-blue-400">
+                Book Parcel
+              </Link>
+            )}
             <a href="#services" className="text-white hover:text-blue-400">
               Services
             </a>
             <a href="#contact" className="text-white hover:text-blue-400">
               Contact
             </a>
-            {!islogin ? (
+            {!isLogin ? (
               <a
                 className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded"
                 onClick={() => setIsModalOpen(true)}
@@ -162,7 +184,7 @@ const Hero = () => {
               <div className="flex items-center space-x-2">
                 <div>
                   <Avatar
-                    name={userdetails?.name || "User"}
+                    name={userDetails?.name || "User"}
                     size="30"
                     round={true}
                     className="cursor-pointer"
@@ -194,14 +216,14 @@ const Hero = () => {
             Delivering excellence across India with speed, reliability, and
             precision.
           </p>
-          {islogin && userdetails && (
+          {isLogin && userDetails && (
             <p className="text-2xl text-white font-bold ">
-              Welcome , {userdetails.name}👋
+              Welcome , {userDetails.name}👋
             </p>
           )}
-          {islogin && userdetails?.role === "Admin" ? (
+          {isLogin && userDetails?.role === "Admin" ? (
             <a
-              href="#booking" // Replace with the actual link to the admin dashboard
+              href="#booking"
               className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
             >
               Go to Dashboard{" "}
@@ -209,7 +231,7 @@ const Hero = () => {
             </a>
           ) : (
             <a
-              href="#booking" // Replace with the actual link to the admin dashboard
+              href="#booking"
               className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
             >
               Book Parcel{" "}
@@ -229,30 +251,31 @@ const Hero = () => {
             >
               <X className="h-8 w-8" />
             </button>
-            <a
-              href="#booking"
-              className="text-white py-2"
-              onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu
-            >
-              Book Parcel
-            </a>
-            <a
-              href="#services"
-              className="text-white py-2"
-              onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu
-            >
+            {userDetails?.role === "Admin" ? (
+              <a href="#booking" className="text-white hover:text-blue-400">
+                Admin Reports
+              </a>
+            ) : userDetails?.role === "Customer" ? (
+              <Link
+                to="/user-reports"
+                className="text-white hover:text-blue-400"
+              >
+                Reports
+              </Link>
+            ) : (
+              <Link to="/" className="text-white hover:text-blue-400">
+                Book Parcel
+              </Link>
+            )}
+            <a href="#services" className="text-white py-2">
               Services
             </a>
-            <a
-              href="#contact"
-              className="text-white py-2"
-              onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu
-            >
+            <a href="#contact" className="text-white py-2">
               Contact
             </a>
-            {!islogin ? (
+            {!isLogin ? (
               <a
-                className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded"
+                className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded mt-4"
                 onClick={() => setIsModalOpen(true)}
               >
                 Login
@@ -261,7 +284,7 @@ const Hero = () => {
               <div className="flex items-center space-x-2">
                 <div>
                   <Avatar
-                    name={userdetails?.name || "User"}
+                    name={userDetails?.name || "User"}
                     size="30"
                     round={true}
                     className="cursor-pointer"
@@ -270,161 +293,118 @@ const Hero = () => {
                 </div>
               </div>
             )}
-
-            <div
-              className="text-white py-2"
-              onClick={() => {
-                setIsModalOpen(true);
-                setIsMobileMenuOpen(false);
-              }} // Close menu and open profile modal
-            ></div>
           </div>
         </div>
       )}
 
-      {/* Login Modal */}
+      {/* Modal for Login */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg w-96">
             <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-              onClick={() => setIsModalOpen(false)} // Close modal
+              className="absolute top-2 right-2 text-gray-400"
+              onClick={() => setIsModalOpen(false)}
             >
               <X className="h-6 w-6" />
             </button>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-              Sign In
-            </h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleLogin();
-              }}
+            <h2 className="text-2xl font-bold mb-4">Login</h2>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              className="w-full mb-4 p-2 border border-gray-300 rounded"
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full mb-4 p-2 border border-gray-300 rounded"
+            />
+            <button
+              onClick={handleLogin}
+              className="w-full py-2 bg-blue-600 text-white rounded"
             >
-              <div className="mb-4">
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
+              Login
+            </button>
+            <div className="mt-4 text-center">
+              <span
+                onClick={() => {
+                  setRegisterModalOpen(true);
+                  setIsModalOpen(false);
+                }}
+                className="text-blue-600 cursor-pointer"
               >
-                Log in
-              </button>
-            </form>
-
-            <a
-              className="cursor-pointer"
-              onClick={() => {
-                setIsModalOpen(false); // Close the login modal
-                setRegisterModalOpen(true); // Open the register modal
-              }}
-            >
-              <p className="text-blue-300 text-center mt-2">
-                Dont have an account?
-              </p>
-            </a>
-            <div className="text-center py-4">
-              <button className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-300 flex items-center justify-center">
-                <FaGoogle className="h-5 w-5 mr-2" />
-                Sign in with Google
-              </button>
+                Don't have an account? Register
+              </span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Register Modal */}
-
+      {/* Modal for Register */}
       {registerModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg w-96">
             <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-              onClick={() => setRegisterModalOpen(false)} // Close modal
+              className="absolute top-2 right-2 text-gray-400"
+              onClick={() => setRegisterModalOpen(false)}
             >
               <X className="h-6 w-6" />
             </button>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-              Register
-            </h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleRegister();
-              }}
+            <h2 className="text-2xl font-bold mb-4">Register</h2>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name"
+              className="w-full mb-4 p-2 border border-gray-300 rounded"
+            />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              className="w-full mb-4 p-2 border border-gray-300 rounded"
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full mb-4 p-2 border border-gray-300 rounded"
+            />
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full mb-4 p-2 border border-gray-300 rounded"
             >
-              <div className="mb-4">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <select
-                  name="Role"
-                  value={role} // Bind to the state
-                  onChange={(e) => setRole(e.target.value)} // Update state on change
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 transition duration-300"
-                >
-                  <option value="Customer">Customer</option>
-                  {/* <option value="Admin">Admin</option> */}
-                </select>
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
+              <option value="Customer">Customer</option>
+              <option value="Admin">Admin</option>
+            </select>
+            <button
+              onClick={handleRegister}
+              className="w-full py-2 bg-blue-600 text-white rounded"
+            >
+              Register
+            </button>
+            <div className="mt-4 text-center">
+              <span
+                onClick={() => {
+                  setRegisterModalOpen(false);
+                  setIsModalOpen(true);
+                }}
+                className="text-blue-600 cursor-pointer"
               >
-                Register
-              </button>
-            </form>
+                Already have an account? Login
+              </span>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ProfileModal */}
-
-      {ProfileModalOpen && (
+      {profileModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
             <button
@@ -438,11 +418,11 @@ const Hero = () => {
             </h3>
             <div className="flex gap-2">
               <span>Name:</span>
-              <p className="font-bold">{userdetails?.name}</p>
+              <p className="font-bold">{userDetails?.name}</p>
             </div>
             <div className="flex gap-2">
               <span>Email:</span>
-              <p className="font-bold">{userdetails?.email}</p>
+              <p className="font-bold">{userDetails?.email}</p>
             </div>
             <div>
               <button
@@ -456,7 +436,9 @@ const Hero = () => {
           </div>
         </div>
       )}
-      <Booking userRole={userdetails?.role || "Customer"} />
+      <Booking userRole={userDetails?.role || "Customer"} />
+      <Services />
+      <Contact />
     </>
   );
 };

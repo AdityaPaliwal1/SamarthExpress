@@ -6,6 +6,8 @@ const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const PDFDocument = require("pdfkit");
 const Parcel = require("./models/Parcel");
+const Item = require("./models/Item");
+
 const bodyParser = require("body-parser");
 const path = require("path");
 const cors = require("cors");
@@ -23,7 +25,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://samarthexpress.onrender.com", // Replace with your frontend URL
+    origin: "http://localhost:5173", // Replace with your frontend URL
     methods: ["GET", "POST"],
   },
 });
@@ -33,7 +35,7 @@ dotenv.config();
 const _dirname = path.resolve();
 // Middleware
 const CorsOptions = {
-  origin: "https://samarthexpress.onrender.com",
+  origin: "http://localhost:5173",
   credentials: true,
 };
 app.use(cors());
@@ -61,14 +63,30 @@ app.use("/api", userRoutes); //for user registration and login
 //fetch all parcels
 app.use("/api/getAll", async (req, res) => {
   try {
-    const allParcels = await Parcel.find();
-    res.status(200).json(allParcels);
+    const allItems = await Item.find();
+    res.status(200).json(allItems);
   } catch (err) {
     console.error("Error fetching all parcels:", err);
     res.status(500).send("Error fetching all parcels");
   }
 });
 
+app.use("/api/getparcels/:user_id", async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    if (!user_id) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    const items = await Item.find({ user_id });
+    if (!items || items.length === 0) {
+      return res.status(404).json({ message: "No parcels found" });
+    }
+    res.status(200).json({ parcels: items }); // Ensure response structure
+  } catch (err) {
+    console.error("Error fetching parcels:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 //fetch razorpay key
 app.use("/api/razorpay-key", async (req, res) => {
   try {
@@ -107,9 +125,9 @@ app.use("/api/payment/order", async (req, res) => {
 app.get("/api/receipt/:trackingId", async (req, res) => {
   try {
     const { trackingId } = req.params;
-    const parcel = await Parcel.findOne({ tracking_id: trackingId });
+    const item = await Item.findOne({ tracking_id: trackingId });
 
-    if (!parcel) {
+    if (!item) {
       return res.status(404).send("Parcel not found");
     }
 
@@ -130,61 +148,29 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
     // Add content to PDF
     doc.fontSize(20).text(`Receipt for Parcel Booking`, { align: "center" });
     doc.moveDown();
-    doc.fontSize(12).text(`Tracking ID: ${parcel.tracking_id}`);
-    doc.fontSize(12).text(`Payment ID: ${parcel.payment_id}`);
-    doc.fontSize(12).text(`Order ID: ${parcel.order_id}`);
-    doc.text(`Sender Phone: ${parcel.sender_phone}`);
-    doc.text(`Sender City : ${parcel.sender_city}`);
-    doc.text(`Sender Address: ${parcel.sender_address}`);
-    doc.text(`Receiver Name: ${parcel.receiver_name}`);
-    doc.text(`Receiver Phone: ${parcel.receiver_phone}`);
-    doc.text(`Receiver City: ${parcel.receiver_city}`);
-    doc.text(`Receiver Address: ${parcel.receiver_address}`);
-    doc.text(`Weight: ${parcel.weight} kg`);
-    doc.text(`Parcel Type: ${parcel.parcel_type}`);
-    doc.text(`Declared Value: ₹${parcel.declared_value}`);
-    doc.text(`Description: ${parcel.description}`);
-    doc.text(`Booked Time: ${parcel.created_at}`);
+    doc.fontSize(12).text(`Tracking ID: ${item.tracking_id}`);
+    doc.fontSize(12).text(`Payment ID: ${item.payment_id}`);
+    doc.fontSize(12).text(`Order ID: ${item.order_id}`);
+    doc.text(`Sender Phone: ${item.sender_phone}`);
+    doc.text(`Sender City : ${item.sender_city}`);
+    doc.text(`Sender Address: ${item.sender_address}`);
+    doc.text(`Receiver Name: ${item.receiver_name}`);
+    doc.text(`Receiver Phone: ${item.receiver_phone}`);
+    doc.text(`Receiver City: ${item.receiver_city}`);
+    doc.text(`Receiver Address: ${item.receiver_address}`);
+    doc.text(`Weight: ${item.weight} kg`);
+    doc.text(`Parcel Type: ${item.parcel_type}`);
+    doc.text(`Declared Value: ₹${item.declared_value}`);
+    doc.text(`Description: ${item.description}`);
+    doc.text(`Booked Time: ${item.created_at}`);
     doc.end();
   } catch (error) {
     console.error("Error generating receipt:", error);
     res.status(500).send("Error generating receipt");
   }
 });
-// Socket.io
-// const updateDeliveryStatusAutomatically = async () => {
-//   try {
-//     const parcels = await Parcel.find({ delivered: false });
 
-//     const now = new Date();
-//     for (const parcel of parcels) {
-//       const createdAt = new Date(parcel.created_at);
-//       const elapsedHours = Math.floor(
-//         (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
-//       );
-
-//       if (elapsedHours >= 24) {
-//         parcel.delivered = true;
-//         await parcel.save();
-//         io.emit("deliveryStatusUpdated", parcel); // Notify all clients
-//         console.log(`Parcel ${parcel.tracking_id} marked as delivered.`);
-//       }
-//     }
-//   } catch (err) {
-//     console.error("Error updating delivery status:", err);
-//   }
-// };
-
-// Schedule the task to run every hour
-// setInterval(updateDeliveryStatusAutomatically, 60 * 60 * 1000);
-
-// Start Server
 const PORT = process.env.PORT;
-
-app.use(express.static(path.join(_dirname, "/project/dist")));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(_dirname, "project", "dist", "index.html"));
-});
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`.yellow);

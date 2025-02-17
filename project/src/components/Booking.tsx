@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import Tracking from "./Tracking";
+import Cookies from "js-cookie";
 import { Country, State, City } from "country-state-city";
 import {
   Package,
@@ -20,15 +21,13 @@ declare global {
 }
 
 async function getRazorpayKey() {
-  const response = await fetch(
-    "https://samarthexpress.onrender.com/api/razorpay-key"
-  );
+  const response = await fetch("http://localhost:5000/api/razorpay-key");
   return response.json();
 }
 
 async function getParcelByTrackingId(trackingId: string) {
   const response = await fetch(
-    `https://samarthexpress.onrender.com/api/parcels/${trackingId}`
+    `http://localhost:5000/api/parcels/${trackingId}`
   );
   return response.json();
 }
@@ -49,6 +48,9 @@ const Booking = ({ userRole }: { userRole: string }) => {
     created_at: string;
     delivered: boolean;
   }
+  const userDetails = Cookies.get("user_details");
+ 
+
   interface CityType {
     name: string;
     isoCode: string;
@@ -59,6 +61,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
     isoCode: string;
     countryIsoCode: string;
   }
+
   const [razorpayKey, setRazorpayKey] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("book");
   const [trackingId, setTrackingId] = useState("");
@@ -71,7 +74,6 @@ const Booking = ({ userRole }: { userRole: string }) => {
   const [countries, setCountries] = useState(Country.getAllCountries());
   const [states, setStates] = useState<StateType[]>([]);
   const [cities, setCities] = useState<CityType[]>([]);
-
   const [selectedCountry, setSelectedCountry] = useState([]);
   const [selectedState, setSelectedState] = useState<StateType[]>([]);
   const [SenderCity, setSenderCity] = useState("");
@@ -104,11 +106,12 @@ const Booking = ({ userRole }: { userRole: string }) => {
     setLoading(true);
     setError(null);
 
-    if (!localStorage.getItem("user_details")) {
+    if (!Cookies.get("user_details")) {
       toast.error("Please Log in to book a parcel.");
       setLoading(false);
       return;
     }
+
     if (!razorpayKey) {
       toast.error("Razorpay key not available. Please try again later.");
       setLoading(false);
@@ -138,8 +141,11 @@ const Booking = ({ userRole }: { userRole: string }) => {
       } else {
         Actualamount = 100 + (parcelData.weight - 50) * 2;
       }
+
+      // Fetch user email from Cookie
+
       const paymentResponse = await fetch(
-        "https://samarthexpress.onrender.com/api/payment/order",
+        "http://localhost:5000/api/payment/order",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -161,38 +167,55 @@ const Booking = ({ userRole }: { userRole: string }) => {
         description: "Parcel Booking Payment",
         order_id: order_id,
         handler: async (response: any) => {
-          const { razorpay_payment_id, razorpay_order_id } = response;
-
-          const parcelResponse = await fetch(
-            "https://samarthexpress.onrender.com/api/parcels",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                razorpay_payment_id, // Pass payment ID
-                trackingDetails: parcelData,
-                razorpay_order_id, // Pass parcel details
-              }),
+          try {
+            const { razorpay_payment_id, razorpay_order_id } = response;
+            const user = JSON.parse(Cookies.get("user_details") || "{}");
+            const user_id = user.id || null;
+            if (!user_id) {
+              throw new Error("User ID missing in cookie");
             }
-          );
 
-          if (!parcelResponse.ok) {
-            throw new Error("Parcel booking failed after payment");
+            const parcelResponse = await fetch(
+              "http://localhost:5000/api/parcels",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_payment_id,
+                  trackingDetails: parcelData,
+                  razorpay_order_id,
+                  user_id,
+                }),
+              }
+            );
+
+            if (!parcelResponse.ok) {
+              const errorRes = await parcelResponse.json();
+              throw new Error(errorRes.message || "Parcel booking failed");
+            }
+
+            const parcelDataRes = await parcelResponse.json();
+            console.log("Parcel API Response:", parcelDataRes);
+
+            if (!parcelDataRes.item || !parcelDataRes.item.tracking_id) {
+              throw new Error("Invalid parcel booking response");
+            }
+
+            toast.success(
+              `Booking successful! Your tracking ID is: ${parcelDataRes.item.tracking_id}`
+            );
+            setTrackingId(parcelDataRes.item.tracking_id);
+            setbook(true);
+            (e.target as HTMLFormElement).reset();
+          } catch (error) {
+            toast.error(error.message);
+            console.error(error);
           }
-
-          const parcelDataRes = await parcelResponse.json();
-          toast.success(
-            `Booking successful! Your tracking ID is: ${parcelDataRes.parcel.tracking_id}`
-          );
-
-          setTrackingId(parcelDataRes.parcel.tracking_id);
-          setbook(true);
-          (e.target as HTMLFormElement).reset();
         },
 
         prefill: {
           name: parcelData.sender_name,
-          email: "customer@example.com",
+          email: "abc@gmail.com", // Corrected: Use user's email from Cookie
           contact: parcelData.sender_phone,
         },
         theme: {
@@ -282,6 +305,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                             <Box className="h-5 w-5 text-blue-600" />
                             Sender Details
                           </h3>
+
                           <input
                             name="sender_name"
                             type="text"
@@ -538,7 +562,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                       {book && (
                         <div className="mt-4">
                           <a
-                            href={`https://samarthexpress.onrender.com/api/receipt/${trackingId}`}
+                            href={`http://localhost:5000/api/receipt/${trackingId}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition duration-300"
@@ -593,6 +617,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                                 <h4 className="font-semibold text-gray-600">
                                   Sender
                                 </h4>
+
                                 <p>{trackingResult.sender_name}</p>
                                 <p>{trackingResult.sender_city}</p>
                                 <p>{trackingResult.sender_address}</p>
@@ -638,7 +663,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                               {trackingId && (
                                 <div className="mt-4">
                                   <a
-                                    href={`https://samarthexpress.onrender.com/api/receipt/${trackingId}`}
+                                    href={`http://localhost:5000/api/receipt/${trackingId}`}
                                     download={`receipt-${trackingId}.pdf`}
                                     target="_blank"
                                     rel="noopener noreferrer"
