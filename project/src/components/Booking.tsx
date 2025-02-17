@@ -48,9 +48,6 @@ const Booking = ({ userRole }: { userRole: string }) => {
     created_at: string;
     delivered: boolean;
   }
-  const userDetails = Cookies.get("user_details");
- 
-
   interface CityType {
     name: string;
     isoCode: string;
@@ -174,7 +171,6 @@ const Booking = ({ userRole }: { userRole: string }) => {
             if (!user_id) {
               throw new Error("User ID missing in cookie");
             }
-
             const parcelResponse = await fetch(
               "http://localhost:5000/api/parcels",
               {
@@ -207,7 +203,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
             setTrackingId(parcelDataRes.item.tracking_id);
             setbook(true);
             (e.target as HTMLFormElement).reset();
-          } catch (error) {
+          } catch (error : any) {
             toast.error(error.message);
             console.error(error);
           }

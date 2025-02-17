@@ -5,7 +5,6 @@ const getStream = require("get-stream");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const PDFDocument = require("pdfkit");
-const Parcel = require("./models/Parcel");
 const Item = require("./models/Item");
 
 const bodyParser = require("body-parser");

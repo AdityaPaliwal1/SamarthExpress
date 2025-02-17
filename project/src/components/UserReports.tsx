@@ -17,6 +17,7 @@ const UserReports = () => {
     created_at: string;
     declared_value: number;
     tracking_id: string;
+    delivered : boolean;
   }
 
   const [parcels, setParcels] = useState<ParcelDetails[]>([]);
@@ -46,7 +47,7 @@ const UserReports = () => {
       }
       const data = await response.json();
       setParcels(data.parcels || []);
-    } catch (err) {
+    } catch (err : any) {
       setError(err.message);
       toast.error("Failed to fetch parcels.");
     } finally {
@@ -86,15 +87,15 @@ const UserReports = () => {
 
   return (
     <div className="p-6">
-     <p className="text-gray-400 cursor-pointer">
-     <span>
-        {" "}
-        <Link to="/" className="text-blue-500 ">
-          {"<"} Home
-        </Link>
-      </span>
-      /user-report
-     </p>
+      <p className="text-gray-400 cursor-pointer">
+        <span>
+          {" "}
+          <Link to="/" className="text-blue-500 ">
+            {"<"} Home
+          </Link>
+        </span>
+        /user-report
+      </p>
       <h2 className="text-2xl text-center font-bold my-4 text-blue-400">
         YOUR PARCEL RECORDS
       </h2>
@@ -110,46 +111,56 @@ const UserReports = () => {
         onChange={(e) => setDate(e.target.value)}
         className="p-2 rounded border mx-3 cursor-pointer"
       />
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="py-2 px-4 border-b">Sender</th>
-              <th className="py-2 px-4 border-b">Receiver</th>
-              <th className="py-2 px-4 border-b">Sender City</th>
-              <th className="py-2 px-4 border-b">Receiver City</th>
-              <th className="py-2 px-4 border-b">Parcel Type</th>
-              <th className="py-2 px-4 border-b">Booking Date</th>
-              <th className="py-2 px-4 border-b">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.length > 0 ? (
-              currentItems.map((parcel) => (
-                <tr key={parcel.tracking_id} className="hover:bg-gray-50">
-                  <td className="py-2 px-4 border-b">{parcel.sender_name}</td>
-                  <td className="py-2 px-4 border-b">{parcel.receiver_name}</td>
-                  <td className="py-2 px-4 border-b">{parcel.sender_city}</td>
-                  <td className="py-2 px-4 border-b">{parcel.receiver_city}</td>
-                  <td className="py-2 px-4 border-b">{parcel.parcel_type}</td>
-                  <td className="py-2 px-4 border-b">
-                    {formatToIST(parcel.created_at).split(",")[0]}
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    ₹{parcel.declared_value}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={7} className="text-center py-4">
-                  No parcels found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+     {!loading ? (
+       <div className="overflow-x-auto">
+       <table className="min-w-full bg-white border border-gray-200">
+         <thead>
+           <tr className="bg-gray-100">
+             <th className="py-2 px-4 border-b">Sender</th>
+             <th className="py-2 px-4 border-b">Receiver</th>
+             <th className="py-2 px-4 border-b">Sender City</th>
+             <th className="py-2 px-4 border-b">Receiver City</th>
+             <th className="py-2 px-4 border-b">Parcel Type</th>
+             <th className="py-2 px-4 border-b">Booking Date</th>
+             <th className="py-2 px-4 border-b">Amount</th>
+             <th className="py-2 px-4 border-b">Delivered</th>
+           </tr>
+         </thead>
+         <tbody>
+           {currentItems.length > 0 ? (
+             currentItems.map((parcel) => (
+               <tr key={parcel.tracking_id} className="hover:bg-gray-50">
+                 <td className="py-2 px-4 border-b">{parcel.sender_name}</td>
+                 <td className="py-2 px-4 border-b">{parcel.receiver_name}</td>
+                 <td className="py-2 px-4 border-b">{parcel.sender_city}</td>
+                 <td className="py-2 px-4 border-b">{parcel.receiver_city}</td>
+                 <td className="py-2 px-4 border-b">{parcel.parcel_type}</td>
+                 <td className="py-2 px-4 border-b">
+                   {formatToIST(parcel.created_at).split(",")[0]}
+                 </td>
+                 <td className="py-2 px-4 border-b">
+                   ₹{parcel.declared_value}
+                 </td>
+                 <td className="py-2 px-4 border-b">
+                   {parcel.delivered ? (
+                     <span className="text-green-600">Delivered</span>
+                   ) : (
+                     <span className="text-red-600">Not Delivered</span>
+                   )}
+                 </td>
+               </tr>
+             ))
+           ) : (
+             <tr>
+               <td colSpan={7} className="text-center py-4">
+                 No parcels found
+               </td>
+             </tr>
+           )}
+         </tbody>
+       </table>
+     </div>
+     ):loading}
       <div className="flex justify-end items-center mt-4">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
