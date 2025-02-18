@@ -8,27 +8,10 @@ async function getParcelDetails(trackingId: string) {
   return response.json();
 }
 
-// update the delivery status of a parcel
-const updateDeliveryStatus = async (trackingId: string, delivered: boolean) => {
-  try {
-    const response = await fetch(
-      `http://localhost:5000/api/parcels/${trackingId}/delivery`,
-      {
-        method: "PATCH", // Use PATCH instead of PUT
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ delivered }),
-      }
-    );
-    const updatedParcel = await response.json();
-    console.log("Delivery status updated:", updatedParcel);
-  } catch (error) {
-    console.error("Error updating delivery status:", error);
-  }
-};
-
 const Tracking = ({ trackingID }: any) => {
   const [loading, setLoading] = useState(true);
   const [createdAt, setCreatedAt] = useState<Date | null>(null);
+  const [delivered, setDelivered] = useState(false);
   const [currentStep, setCurrentStep] = useState<number>(1);
 
   const fetchTrackingDetails = async () => {
@@ -37,6 +20,9 @@ const Tracking = ({ trackingID }: any) => {
       const result = await getParcelDetails(trackingID);
       if (result?.created_at) {
         setCreatedAt(new Date(result.created_at));
+      }
+      if (result.delivered == true) {
+        setDelivered(true);
       }
     } catch (error) {
       console.error("Error fetching parcel details:", error);
@@ -52,10 +38,9 @@ const Tracking = ({ trackingID }: any) => {
         const elapsedHours = Math.floor(
           (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
         );
-
-        if (elapsedHours >= 24) {
+        if (delivered == true) {
           setCurrentStep(4);
-          updateDeliveryStatus(trackingID, true); // Mark as delivered
+          // Mark as delivered
         } else if (elapsedHours >= 21) {
           setCurrentStep(3);
         } else if (elapsedHours >= 20) {

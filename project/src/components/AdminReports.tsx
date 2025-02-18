@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
+import DeliveryStatusCheckbox from "./CheckBox";
+
 async function getAllParcels() {
-  const response = await fetch(
-    "http://localhost:5000/api/getAll"
-  );
+  const response = await fetch("http://localhost:5000/api/getAll");
   return response.json();
 }
 
@@ -39,18 +39,8 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
   }, [userRole]);
 
   const fetchAllParcels = async () => {
-    const now = new Date();
     try {
       const parcels = await getAllParcels();
-      for (const parcel of parcels) {
-        const createdAt = new Date(parcel.created_at);
-        const elapsedHours = Math.floor(
-          (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
-        );
-        if (elapsedHours >= 24) {
-          parcel.delivered = true;
-        }
-      }
       setAllParcels(parcels);
     } catch (err) {
       toast.error("Failed to fetch parcels.");
@@ -79,16 +69,16 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
     return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   };
 
-   const downloadExcel = () => {
-      const worksheet = XLSX.utils.json_to_sheet(
-        filterParcelsbyDate(allParcels, date)
-      ); // Convert the data to Excel sheet
-      const workbook = XLSX.utils.book_new(); // Create a new workbook
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Parcels"); // Append the sheet to the workbook
-      XLSX.writeFile(workbook, "parcels.xlsx"); // Download the Excel file
-    };
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      filterParcelsbyDate(allParcels, date)
+    ); // Convert the data to Excel sheet
+    const workbook = XLSX.utils.book_new(); // Create a new workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Parcels"); // Append the sheet to the workbook
+    XLSX.writeFile(workbook, "parcels.xlsx"); // Download the Excel file
+  };
 
-    const itemsPerPage = 10;
+  const itemsPerPage = 10;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredParcels.slice(indexOfFirstItem, indexOfLastItem);
@@ -158,7 +148,7 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
                     {parcel.delivered ? (
                       <span className="text-green-600">Delivered</span>
                     ) : (
-                      <span className="text-red-600">Not Delivered</span>
+                      <DeliveryStatusCheckbox parcelId={parcel.tracking_id} />
                     )}
                   </td>
                 </tr>

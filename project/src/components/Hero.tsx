@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Avatar from "react-avatar";
 import { FaGoogle } from "react-icons/fa";
+import BgImage from "../../Background.png";
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
 import Cookies from "js-cookie";
@@ -56,17 +57,14 @@ const Hero = () => {
   // Login Handler
   const handleLogin = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email,
-            password: password,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
 
       const data = await response.json();
       console.log("login data ", data);
@@ -94,19 +92,16 @@ const Hero = () => {
   // Register Handler
   const handleRegister = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: name,
-            email: email,
-            password: password,
-            role: role,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name,
+          email: email,
+          password: password,
+          role: role,
+        }),
+      });
 
       const data = await response.json();
       console.log("Registered data ", data);
@@ -132,7 +127,7 @@ const Hero = () => {
       <header className="relative h-screen">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80"
+            src={BgImage}
             alt="Logistics Background"
             className="w-full h-full object-cover"
           />
@@ -416,6 +411,15 @@ const Hero = () => {
             <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center  text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
               User Profile
             </h3>
+            <div className="flex justify-center items-center mb-4">
+              <Avatar
+                name={userDetails?.name || "User"}
+                size="60"
+                round={true}
+                className="cursor-pointer"
+                onClick={() => setProfileModalOpen(true)}
+              />
+            </div>
             <div className="flex gap-2">
               <span>Name:</span>
               <p className="font-bold">{userDetails?.name}</p>
