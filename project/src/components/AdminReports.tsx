@@ -1,12 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
-import DeliveryStatusCheckbox from "./CheckBox";
+import { X } from "lucide-react";
 
 async function getAllParcels() {
   const response = await fetch("http://localhost:5000/api/getAll");
   return response.json();
 }
+
+const updateDeliveryStatus = async (trackingId: string, delivered: boolean) => {
+  const timestamp = Date.now();
+  const date = new Date(timestamp);
+
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // Months are 0-based (0 = January)
+  const day = date.getDate();
+
+  const DOD = delivered ? `${day}/${month}/${year}` : "";
+
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/parcels/${trackingId}/delivery`,
+      {
+        method: "PATCH", // Use PATCH instead of PUT
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ delivered, DOD }),
+      }
+    );
+    const updatedParcel = await response.json();
+    console.log("Delivery status updated:", updatedParcel);
+  } catch (error) {
+    console.error("Error updating delivery status:", error);
+  }
+};
 
 const AdminReports = ({ userRole }: { userRole: string }) => {
   interface ParcelDetails {
@@ -23,6 +49,7 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
     tracking_id: string;
     created_at: string;
     delivered: boolean;
+    DOD: string;
   }
 
   const [allParcels, setAllParcels] = useState<ParcelDetails[]>([]);
@@ -30,11 +57,12 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
     () => new Date().toISOString().split("T")[0]
   );
   const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     if (userRole === "Admin") {
       fetchAllParcels();
-      setInterval(fetchAllParcels, 60000);
-      // Fetch parcels every minute
+      const intervalId = setInterval(fetchAllParcels, 60000);
+      return () => clearInterval(intervalId); // Cleanup interval on unmount
     }
   }, [userRole]);
 
@@ -146,9 +174,27 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
                   </td>
                   <td className="py-2 px-4 border-b">
                     {parcel.delivered ? (
-                      <span className="text-green-600">Delivered</span>
+                      <div className="flex justify-center items-center gap-1">
+                        <span className="text-green-600 text-sm">
+                          Delivered
+                        </span>
+                        <X
+                          className="text-red-500 h-5 w-5 cursor-pointer"
+                          onClick={() =>
+                            updateDeliveryStatus(parcel.tracking_id, false)
+                          }
+                        />
+                      </div>
                     ) : (
-                      <DeliveryStatusCheckbox parcelId={parcel.tracking_id} />
+                      <label className="flex gap-2 justify-center items-center text-red-600">
+                        <input
+                          type="checkbox"
+                          onClick={() =>
+                            updateDeliveryStatus(parcel.tracking_id, true)
+                          }
+                        />
+                        Delivered
+                      </label>
                     )}
                   </td>
                 </tr>

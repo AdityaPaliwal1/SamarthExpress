@@ -48,12 +48,15 @@ exports.getParcel = async (req, res) => {
 // update parcel (delivered)
 exports.updateDeliveryStatus = async (req, res) => {
   const { trackingId } = req.params;
-  const { delivered } = req.body;
+  const { delivered , DOD } = req.body;
+  
 
   try {
     const item = await Item.findOneAndUpdate(
       { tracking_id: trackingId },
-      { delivered },
+      { delivered ,
+        DOD: delivered ? DOD : "" 
+       },
       { new: true } // Return the updated document
     );
     res.json(item);
@@ -61,5 +64,3 @@ exports.updateDeliveryStatus = async (req, res) => {
     res.status(500).send("Error updating delivery status");
   }
 };
-
-

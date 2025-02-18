@@ -41,7 +41,7 @@ const Contact = () => {
           <h2 className="text-3xl font-bold text-center mb-16">Contact Us</h2>
           <div className="grid md:grid-cols-2 gap-12">
             <div>
-              <h3 className="text-2xl font-semibold mb-6">Get in Touch</h3>
+              <h3 className="text-2xl font-semibold mb-6 text-blue-600">Get in Touch</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <Phone className="h-6 w-6" />

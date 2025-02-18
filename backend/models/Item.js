@@ -15,8 +15,9 @@ const ItemSchema = new mongoose.Schema({
   description: String,
   tracking_id: { type: String, unique: true },
   created_at: { type: Date, default: new Date() },
+  DOD: { type: String },
   order_id: { type: String, unique: true, default: "" },
-  user_id: { type: String},
+  user_id: { type: String },
   payment_id: { type: String, unique: true },
   delivered: { type: Boolean, default: false },
 });
