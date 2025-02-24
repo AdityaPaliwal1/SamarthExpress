@@ -1,5 +1,3 @@
-const fs = require("fs");
-const path = require("path");
 const Item = require("../models/Item");
 require("dotenv").config();
 
@@ -50,7 +48,6 @@ exports.updateDeliveryStatus = async (req, res) => {
   const { trackingId } = req.params;
   const { delivered , DOD } = req.body;
   
-
   try {
     const item = await Item.findOneAndUpdate(
       { tracking_id: trackingId },

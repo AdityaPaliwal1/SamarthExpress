@@ -30,7 +30,7 @@ const io = new Server(server, {
 });
 
 dotenv.config();
-
+app.use(express.urlencoded({ extended: true }));
 const _dirname = path.resolve();
 // Middleware
 const CorsOptions = {

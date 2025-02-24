@@ -2,20 +2,20 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import { X } from "lucide-react";
+import { FiRefreshCcw } from "react-icons/fi";
 
 async function getAllParcels() {
   const response = await fetch("http://localhost:5000/api/getAll");
   return response.json();
 }
 
+//Function to updateDeliveryStatus
 const updateDeliveryStatus = async (trackingId: string, delivered: boolean) => {
   const timestamp = Date.now();
   const date = new Date(timestamp);
-
   const year = date.getFullYear();
   const month = date.getMonth() + 1; // Months are 0-based (0 = January)
   const day = date.getDate();
-
   const DOD = delivered ? `${day}/${month}/${year}` : "";
 
   try {
@@ -35,6 +35,7 @@ const updateDeliveryStatus = async (trackingId: string, delivered: boolean) => {
 };
 
 const AdminReports = ({ userRole }: { userRole: string }) => {
+  //Interface for ParcelDetails
   interface ParcelDetails {
     sender_name: string;
     sender_city: string;
@@ -61,11 +62,13 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
   useEffect(() => {
     if (userRole === "Admin") {
       fetchAllParcels();
-      const intervalId = setInterval(fetchAllParcels, 60000);
-      return () => clearInterval(intervalId); // Cleanup interval on unmount
     }
   }, [userRole]);
 
+  const handleRefreshPage = () => {
+    fetchAllParcels();
+  };
+  
   const fetchAllParcels = async () => {
     try {
       const parcels = await getAllParcels();
@@ -143,6 +146,12 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
           onChange={(e) => setDate(e.target.value)}
           className="p-2 rounded border mx-3 cursor-pointer"
         />
+        <div className="flex items-center">
+          <FiRefreshCcw
+            className="ml-auto mb-2 text-gray-400 cursor-pointer"
+            onClick={handleRefreshPage}
+          />
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-200">
             <thead>

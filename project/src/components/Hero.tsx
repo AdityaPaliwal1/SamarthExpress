@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Avatar from "react-avatar";
-import { FaGoogle } from "react-icons/fa";
 import BgImage from "../../Background.png";
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -11,6 +10,7 @@ import { toast } from "react-toastify";
 import Booking from "./Booking";
 import Services from "./Services";
 import Contact from "./Contact";
+import { FiRefreshCcw } from "react-icons/fi";
 
 const Hero = () => {
   interface UserDetails {
@@ -27,8 +27,10 @@ const Hero = () => {
   const [isLogin, setLogin] = useState(false);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [RequestButton, setRequestButton] = useState(false);
+  const [Pending, setPending] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = Cookies.get("jwt_token");
@@ -121,6 +123,61 @@ const Hero = () => {
       toast.error("Failed , Check Credentials ");
     }
   };
+
+  const handleAdminAccess = async () => {
+    if (!name || !email) {
+      toast.error("Fill all the Feilds");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/send-email/toEnterprise",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Sent Request");
+        setPending(true);
+      }
+    } catch (err) {
+      toast.error("Failed");
+    }
+  };
+
+  const checkApprovalStatus = async () => {
+    if(!email){
+      return;
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/send-email/check-approval?email=${email}`
+      );
+      const data = await response.json();
+      if (data.approved) {
+        setPending(false);
+        setRequestButton(false);
+        // Enable Register button
+      }
+    } catch (error) {
+      console.error("Error checking approval:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (role === "Admin" && email) {
+      const interval = setInterval(checkApprovalStatus, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [email, role]);
 
   return (
     <>
@@ -296,13 +353,15 @@ const Hero = () => {
       {isModalOpen && (
         <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg w-96">
-            <button
-              className="absolute top-2 right-2 text-gray-400"
-              onClick={() => setIsModalOpen(false)}
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <h2 className="text-2xl font-bold mb-4">Login</h2>
+            <div className="flex items-center">
+              <button
+                className="ml-auto text-gray-400"
+                onClick={() => setIsModalOpen(false)}
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <h2 className="text-2xl text-center font-bold mb-4">Login</h2>
             <input
               type="email"
               value={email}
@@ -342,13 +401,15 @@ const Hero = () => {
       {registerModalOpen && (
         <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg w-96">
-            <button
-              className="absolute top-2 right-2 text-gray-400"
-              onClick={() => setRegisterModalOpen(false)}
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <h2 className="text-2xl font-bold mb-4">Register</h2>
+            <div className="flex items-center">
+              <button
+                className="ml-auto text-gray-400"
+                onClick={() => setRegisterModalOpen(false)}
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <h2 className="text-2xl text-center font-bold mb-4">Register</h2>
             <input
               type="text"
               value={name}
@@ -372,23 +433,52 @@ const Hero = () => {
             />
             <select
               value={role}
-              onChange={(e) => setRole(e.target.value)}
+              onChange={(e) => {
+                setRole(e.target.value);
+                setRequestButton(e.target.value === "Admin");
+              }}
               className="w-full mb-4 p-2 border border-gray-300 rounded"
             >
               <option value="Customer">Customer</option>
               <option value="Admin">Admin</option>
             </select>
+
+            {RequestButton && (
+              <button
+                onClick={handleAdminAccess}
+                className="p-1 mb-2"
+                disabled={Pending}
+              >
+                {Pending ? (
+                  <>
+                    <span className="text-red-500">
+                      Wait until the owner verifies you...
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-green-500 underline">
+                    Send Request for Admin access
+                  </span>
+                )}
+              </button>
+            )}
+
             <button
               onClick={handleRegister}
-              className="w-full py-2 bg-blue-600 text-white rounded"
+              className="w-full py-2 text-white rounded"
+              style={{
+                backgroundColor: RequestButton ? "gray" : "blue",
+                cursor: RequestButton ? "not-allowed" : "pointer",
+              }}
+              disabled={RequestButton}
             >
               Register
             </button>
+
             <div className="mt-4 text-center">
               <span
                 onClick={() => {
                   setRegisterModalOpen(false);
-                  setIsModalOpen(true);
                 }}
                 className="text-blue-600 cursor-pointer"
               >

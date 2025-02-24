@@ -4,14 +4,17 @@ import Tracking from "./Tracking";
 import Cookies from "js-cookie";
 import { Country, State, City } from "country-state-city";
 import {
-  Package,
-  Search,
-  MapPin,
-  DollarSign,
-  Weight,
-  Box,
-  Loader2,
-} from "lucide-react";
+Weight} from "lucide-react";
+import {
+  FiPackage,
+  FiSearch,
+  FiMapPin,
+  FiDollarSign,
+  FiBox,
+  FiLoader,
+  FiRefreshCcw
+} from "react-icons/fi";
+
 import AdminReports from "./AdminReports";
 
 declare global {
@@ -203,7 +206,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
             setTrackingId(parcelDataRes.item.tracking_id);
             setbook(true);
             (e.target as HTMLFormElement).reset();
-          } catch (error : any) {
+          } catch (error: any) {
             toast.error(error.message);
             console.error(error);
           }
@@ -298,7 +301,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                         {/* Sender Details */}
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold flex items-center gap-2">
-                            <Box className="h-5 w-5 text-blue-600" />
+                            <FiBox className="h-5 w-5 text-blue-600" />
                             Sender Details
                           </h3>
 
@@ -397,7 +400,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                         {/* Receiver Details */}
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold flex items-center gap-2">
-                            <MapPin className="h-5 w-5 text-blue-600" />
+                            <FiMapPin className="h-5 w-5 text-blue-600" />
                             Receiver Details
                           </h3>
                           <input
@@ -496,7 +499,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                       {/* Parcel Details */}
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold flex items-center gap-2">
-                          <Package className="h-5 w-5 text-blue-600" />
+                          <FiPackage className="h-5 w-5 text-blue-600" />
                           Parcel Details
                         </h3>
                         <div className="grid md:grid-cols-2 gap-4">
@@ -512,7 +515,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                             />
                           </div>
                           <div className="flex items-center border rounded px-4 py-2">
-                            <DollarSign className="h-5 w-5 text-gray-400 mr-2" />
+                            <FiDollarSign className="h-5 w-5 text-gray-400 mr-2" />
                             <input
                               name="declared_value"
                               type="number"
@@ -548,7 +551,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                       >
                         {loading ? (
                           <>
-                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                            <FiLoader className="h-5 w-5 animate-spin mr-2" />
                             Processing...
                           </>
                         ) : (
@@ -574,7 +577,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                         {/* Tracking form inputs */}
                         <div className="flex items-center border rounded-lg overflow-hidden">
                           <div className="px-4">
-                            <Search className="h-6 w-6 text-gray-400" />
+                            <FiSearch className="h-6 w-6 text-gray-400" />
                           </div>
                           <input
                             type="text"
@@ -591,7 +594,7 @@ const Booking = ({ userRole }: { userRole: string }) => {
                           >
                             {loading ? (
                               <>
-                                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                                <FiLoader className="h-5 w-5 animate-spin mr-2" />
                                 Tracking...
                               </>
                             ) : (
