@@ -1,17 +1,14 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const http = require("http");
 const getStream = require("get-stream");
-const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const PDFDocument = require("pdfkit");
+const fs = require("fs");
 const Item = require("./models/Item");
-
 const bodyParser = require("body-parser");
 const path = require("path");
 const cors = require("cors");
 const razorpay = require("./utils/razorpay");
-
 require("colors");
 
 // Import Routes
@@ -21,23 +18,16 @@ const userRoutes = require("./routes/userRoutes");
 
 // Initialize App
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173", // Replace with your frontend URL
-    methods: ["GET", "POST"],
-  },
-});
 
 dotenv.config();
 app.use(express.urlencoded({ extended: true }));
-const _dirname = path.resolve();
+
 // Middleware
 const CorsOptions = {
   origin: "http://localhost:5173",
   credentials: true,
 };
-app.use(cors());
+app.use(cors(CorsOptions));
 app.use(bodyParser.json());
 
 // MongoDB Connection
@@ -45,14 +35,6 @@ mongoose
   .connect(process.env.MONGO_URI, {})
   .then((e) => console.log("Connected to MongoDB".green.bold))
   .catch((err) => console.error(err).red);
-
-// io.on("connection", (socket) => {
-//   console.log("A client connected:", socket.id);
-
-//   socket.on("disconnect", () => {
-//     console.log("A client disconnected:", socket.id);
-//   });
-// });
 
 // Routes Middleware
 app.use("/api/parcels", parcelRoutes); //for booking and tracking
@@ -70,6 +52,7 @@ app.use("/api/getAll", async (req, res) => {
   }
 });
 
+//Api for UserReports
 app.use("/api/getparcels/:user_id", async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -86,6 +69,7 @@ app.use("/api/getparcels/:user_id", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 //fetch razorpay key
 app.use("/api/razorpay-key", async (req, res) => {
   try {
@@ -131,7 +115,7 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
     }
 
     // Create a PDF document
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ margin: 50 });
     let buffers = [];
     doc.on("data", buffers.push.bind(buffers));
     doc.on("end", () => {
@@ -144,24 +128,75 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
       res.send(pdfBuffer);
     });
 
-    // Add content to PDF
-    doc.fontSize(20).text(`Receipt for Parcel Booking`, { align: "center" });
-    doc.moveDown();
-    doc.fontSize(12).text(`Tracking ID: ${item.tracking_id}`);
-    doc.fontSize(12).text(`Payment ID: ${item.payment_id}`);
-    doc.fontSize(12).text(`Order ID: ${item.order_id}`);
-    doc.text(`Sender Phone: ${item.sender_phone}`);
-    doc.text(`Sender City : ${item.sender_city}`);
-    doc.text(`Sender Address: ${item.sender_address}`);
-    doc.text(`Receiver Name: ${item.receiver_name}`);
-    doc.text(`Receiver Phone: ${item.receiver_phone}`);
-    doc.text(`Receiver City: ${item.receiver_city}`);
-    doc.text(`Receiver Address: ${item.receiver_address}`);
-    doc.text(`Weight: ${item.weight} kg`);
-    doc.text(`Parcel Type: ${item.parcel_type}`);
-    doc.text(`Declared Value: ₹${item.declared_value}`);
-    doc.text(`Description: ${item.description}`);
-    doc.text(`Booked Time: ${item.created_at}`);
+    // Add Logo
+    const logoPath = "./delivery.png";
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, 50, 40, { width: 80 }).moveDown();
+    }
+
+    // Company Title
+    doc
+      .fontSize(25)
+      .fillColor("blue")
+      .text("Samarth Express", { align: "center" })
+      .moveDown(0.3);
+
+    doc
+      .fontSize(12)
+      .fillColor("navy")
+      .text("Your Trusted Logistic Partner", { align: "center" })
+      .moveDown(1);
+
+    // Title
+    doc
+      .fontSize(16)
+      .fillColor("black")
+      .text("Receipt for Parcel Booking", { align: "center", underline: true })
+      .moveDown();
+
+    // Horizontal Line
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke().moveDown(0.5);
+
+    // Parcel Details (Table-like Structure)
+    const addDetail = (label, value) => {
+      doc
+        .font("Helvetica-Bold")
+        .fontSize(13)
+        .text(label + ":", { continued: true })
+        .moveDown(0.5)
+        .font("Helvetica")
+        .fontSize(12)
+        .text(` ${value}`, { align: "right" })
+        .moveDown(0.5);
+    };
+
+    addDetail("Tracking ID", item.tracking_id);
+    addDetail("Payment ID", item.payment_id);
+    addDetail("Order ID", item.order_id);
+    addDetail("Sender Name", item.sender_name);
+    addDetail("Sender Phone", item.sender_phone);
+    addDetail("Sender City", item.sender_city);
+    addDetail("Sender Address", item.sender_address);
+    addDetail("Receiver Name", item.receiver_name);
+    addDetail("Receiver Phone", item.receiver_phone);
+    addDetail("Receiver City", item.receiver_city);
+    addDetail("Receiver Address", item.receiver_address);
+    addDetail("Weight", `${item.weight} kg`);
+    addDetail("Parcel Type", item.parcel_type);
+    addDetail("Declared Value", `₹${item.declared_value}`);
+    addDetail("Description", item.description);
+    addDetail("Booked Time", item.created_at.toLocaleString());
+
+    // Add a footer
+    doc.moveDown(2);
+    doc
+      .fontSize(10)
+      .fillColor("gray")
+      .text(
+        "Thank you for choosing Samarth Express. Safe and reliable delivery!",
+        { align: "center" }
+      );
+
     doc.end();
   } catch (error) {
     console.error("Error generating receipt:", error);
@@ -171,6 +206,6 @@ app.get("/api/receipt/:trackingId", async (req, res) => {
 
 const PORT = process.env.PORT;
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`.yellow);
 });
