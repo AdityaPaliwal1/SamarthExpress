@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
-import { X } from "lucide-react";
+import { FiX } from "react-icons/fi";
 import { FiRefreshCcw } from "react-icons/fi";
 
 async function getAllParcels() {
@@ -37,10 +37,13 @@ const updateDeliveryStatus = async (trackingId: string, delivered: boolean) => {
 const AdminReports = ({ userRole }: { userRole: string }) => {
   //Interface for ParcelDetails
   interface ParcelDetails {
+    _id: string;
     sender_name: string;
+    sender_phone: number;
     sender_city: string;
     sender_address: string;
     receiver_name: string;
+    receiver_phone: number;
     receiver_city: string;
     receiver_address: string;
     weight: number;
@@ -48,6 +51,9 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
     parcel_type: string;
     description: string;
     tracking_id: string;
+    order_id: string;
+    payment_id: string;
+    user_id: string;
     created_at: string;
     delivered: boolean;
     DOD: string;
@@ -68,7 +74,7 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
   const handleRefreshPage = () => {
     fetchAllParcels();
   };
-  
+
   const fetchAllParcels = async () => {
     try {
       const parcels = await getAllParcels();
@@ -101,9 +107,33 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
   };
 
   const downloadExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      filterParcelsbyDate(allParcels, date)
-    ); // Convert the data to Excel sheet
+    const rawData = filterParcelsbyDate(allParcels, date);
+
+    const formattedData = rawData.map((parcel) => ({
+      ID: parcel._id, // Change 'id' to 'Parcel ID'
+      Date: parcel.created_at,
+      SenderName: parcel.sender_name, // Change 'customerName' to 'Customer Name'
+      SenderPhone: parcel.sender_phone, // Change 'status' to 'Delivery Status'
+      SenderAddress: parcel.sender_address, // Change 'orderDate' to 'Date Ordered'
+      SenderCity: parcel.sender_city,
+      ReceiverName: parcel.receiver_name,
+      ReceiverPhone: parcel.receiver_phone,
+      ReceiverAddress: parcel.receiver_address,
+      ReceiverCity: parcel.receiver_city,
+      Weight: parcel.weight,
+      DeclaredValue: parcel.declared_value,
+      Type: parcel.parcel_type,
+      Description: parcel.description,
+      TrakingID: parcel.tracking_id,
+      OrderID: parcel.order_id,
+      PaymentID: parcel.payment_id,
+      UserID: parcel.user_id,
+      Status: parcel.delivered,
+      DateOfDelivery: parcel.DOD,
+      // Change 'address' to 'Address'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedData); // Convert the data to Excel sheet
     const workbook = XLSX.utils.book_new(); // Create a new workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, "Parcels"); // Append the sheet to the workbook
     XLSX.writeFile(workbook, "parcels.xlsx"); // Download the Excel file
@@ -130,13 +160,13 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
   //Return Starts
   return (
     <>
-      <div className="p-6">
-        <h2 className="text-2xl text-center font-bold mb-6 text-blue-400">
+      <div className="p-6" id="AdminReports">
+        <h2 className="text-2xl text-center font-bold mb-6 text-tabColor">
           BOOKING RECORDS
         </h2>
         <button
           onClick={downloadExcel}
-          className="mb-4 p-2 bg-blue-500 text-white rounded"
+          className="mb-4 p-2 bg-button  text-white rounded"
         >
           Download Excel
         </button>
@@ -148,7 +178,7 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
         />
         <div className="flex items-center">
           <FiRefreshCcw
-            className="ml-auto mb-2 text-gray-400 cursor-pointer"
+            className="ml-auto mb-2 text-iconColor cursor-pointer"
             onClick={handleRefreshPage}
           />
         </div>
@@ -168,46 +198,58 @@ const AdminReports = ({ userRole }: { userRole: string }) => {
               </tr>
             </thead>
             <tbody>
-              {currentItems.map((parcel) => (
-                <tr key={parcel.tracking_id} className="hover:bg-gray-50">
-                  <td className="py-2 px-4 border-b">{parcel.sender_name}</td>
-                  <td className="py-2 px-4 border-b">{parcel.receiver_name}</td>
-                  <td className="py-2 px-4 border-b">{parcel.sender_city}</td>
-                  <td className="py-2 px-4 border-b">{parcel.receiver_city}</td>
-                  <td className="py-2 px-4 border-b">{parcel.parcel_type}</td>
-                  <td className="py-2 px-4 border-b">
-                    {formatToIST(parcel.created_at).split(",")[0]}
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    ₹{parcel.declared_value}
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    {parcel.delivered ? (
-                      <div className="flex justify-center items-center gap-1">
-                        <span className="text-green-600 text-sm">
+              {currentItems.length > 0 ? (
+                currentItems.map((parcel) => (
+                  <tr key={parcel.tracking_id} className="hover:bg-gray-50">
+                    <td className="py-2 px-4 border-b">{parcel.sender_name}</td>
+                    <td className="py-2 px-4 border-b">
+                      {parcel.receiver_name}
+                    </td>
+                    <td className="py-2 px-4 border-b">{parcel.sender_city}</td>
+                    <td className="py-2 px-4 border-b">
+                      {parcel.receiver_city}
+                    </td>
+                    <td className="py-2 px-4 border-b">{parcel.parcel_type}</td>
+                    <td className="py-2 px-4 border-b">
+                      {formatToIST(parcel.created_at).split(",")[0]}
+                    </td>
+                    <td className="py-2 px-4 border-b">
+                      ₹{parcel.declared_value}
+                    </td>
+                    <td className="py-2 px-4 border-b">
+                      {parcel.delivered ? (
+                        <div className="flex justify-center items-center gap-1">
+                          <span className="text-green-600 text-sm">
+                            Delivered
+                          </span>
+                          <FiX
+                            className="text-red-500 h-5 w-5 cursor-pointer"
+                            onClick={() =>
+                              updateDeliveryStatus(parcel.tracking_id, false)
+                            }
+                          />
+                        </div>
+                      ) : (
+                        <label className="flex gap-2 justify-center items-center text-red-600">
+                          <input
+                            type="checkbox"
+                            onClick={() =>
+                              updateDeliveryStatus(parcel.tracking_id, true)
+                            }
+                          />
                           Delivered
-                        </span>
-                        <X
-                          className="text-red-500 h-5 w-5 cursor-pointer"
-                          onClick={() =>
-                            updateDeliveryStatus(parcel.tracking_id, false)
-                          }
-                        />
-                      </div>
-                    ) : (
-                      <label className="flex gap-2 justify-center items-center text-red-600">
-                        <input
-                          type="checkbox"
-                          onClick={() =>
-                            updateDeliveryStatus(parcel.tracking_id, true)
-                          }
-                        />
-                        Delivered
-                      </label>
-                    )}
+                        </label>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="text-center py-4">
+                    No parcels found
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

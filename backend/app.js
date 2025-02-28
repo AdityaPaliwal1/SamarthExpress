@@ -34,7 +34,7 @@ app.use(bodyParser.json());
 mongoose
   .connect(process.env.MONGO_URI, {})
   .then((e) => console.log("Connected to MongoDB".green.bold))
-  .catch((err) => console.error(err).red);
+  .catch((err) => console.error(err));
 
 // Routes Middleware
 app.use("/api/parcels", parcelRoutes); //for booking and tracking

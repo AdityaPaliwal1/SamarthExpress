@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
 import Avatar from "react-avatar";
 import BgImage from "../../Background.png";
-import { X } from "lucide-react";
+import { FiX } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import Cookies from "js-cookie";
-import "../index.css";
-import { Truck, Package, LogOut, Menu } from "lucide-react";
+import { FiTruck, FiPackage, FiLogOut, FiMenu } from "react-icons/fi";
 import { toast } from "react-toastify";
 import Booking from "./Booking";
 import Services from "./Services";
 import Contact from "./Contact";
-import { FiRefreshCcw } from "react-icons/fi";
 
 const Hero = () => {
   interface UserDetails {
@@ -154,7 +152,7 @@ const Hero = () => {
   };
 
   const checkApprovalStatus = async () => {
-    if(!email){
+    if (!email) {
       return;
     }
     try {
@@ -181,113 +179,127 @@ const Hero = () => {
 
   return (
     <>
-      <header className="relative h-screen">
-        <div className="absolute inset-0">
+      <nav className=" sticky mx-w-7xl top-0 z-10 flex items-center justify-between px-6 py-4  mx-auto bg-navbar shadow-md">
+        <div className="flex items-center space-x-2">
+          <FiTruck className="h-8 w-8 text-white" />
+          <a href="/#">
+            <span className="text-2xl font-bold text-white">
+              Samarth Express
+            </span>
+          </a>
+        </div>
+
+        {/* Desktop Menu */}
+        <div className="hidden md:flex space-x-8">
+          {userDetails?.role === "Admin" ? (
+            <a
+              href="#AdminReports"
+              className="relative text-white after:block after:h-[3px] after:mt-1 after:w-0 after:bg-red-400 after:transition-all after:duration-300 hover:after:w-1/2 after:mx-auto"
+            >
+              Admin Reports
+            </a>
+          ) : userDetails?.role === "Customer" ? (
+            <Link
+              to="/user-reports"
+              className="relative text-white after:block after:h-[3px] after:mt-1 after:w-0 after:bg-red-400 after:transition-all after:duration-300 hover:after:w-1/2 after:mx-auto"
+            >
+              Reports
+            </Link>
+          ) : (
+            <Link
+              to="/"
+              className="relative text-white after:block after:h-[3px] after:mt-1 after:w-0 after:bg-red-400 after:transition-all after:duration-300 hover:after:w-1/2 after:mx-auto"
+            >
+              Book Parcel
+            </Link>
+          )}
+          <a
+            href="#services"
+            className="relative text-white after:block after:h-[3px] after:mt-1 after:w-0 after:bg-red-400 after:transition-all after:duration-300 hover:after:w-1/2 after:mx-auto "
+          >
+            Services
+          </a>
+          <a
+            href="#contact"
+            className="relative text-white after:block after:h-[3px] after:mt-1 after:w-0 after:bg-red-400 after:transition-all after:duration-300 hover:after:w-1/2 after:mx-auto "
+          >
+            Contact
+          </a>
+          {!isLogin ? (
+            <a
+              className="text-black hover:bg-gray-300 cursor-pointer bg-primary px-3 py-0.5 rounded"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Login
+            </a>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <div>
+                <Avatar
+                  name={userDetails?.name || "User"}
+                  size="30"
+                  round={true}
+                  className="cursor-pointer"
+                  color="#ADBBC2"
+                  onClick={() => setProfileModalOpen(true)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden text-white"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? (
+            <FiMenu className="hidden" />
+          ) : (
+            <FiMenu className="h-8 w-8 text-white" />
+          )}
+        </button>
+      </nav>
+
+      <header className="relative h-screen z-0 m-6">
+        <div className="absolute inset-0  ">
           <img
             src={BgImage}
             alt="Logistics Background"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+          <div className="absolute inset-0 bg-black bg-opacity-70 "></div>
         </div>
 
-        <nav className="relative z-10 flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-          <div className="flex items-center space-x-2">
-            <Truck className="h-8 w-8 text-white" />
-            <a href="/#">
-              <span className="text-2xl font-bold text-white">
-                Samarth Express
-              </span>
-            </a>
-          </div>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-8">
-            {userDetails?.role === "Admin" ? (
-              <a href="#booking" className="text-white hover:text-blue-400">
-                Admin Reports
-              </a>
-            ) : userDetails?.role === "Customer" ? (
-              <Link
-                to="/user-reports"
-                className="text-white hover:text-blue-400"
-              >
-                Reports
-              </Link>
-            ) : (
-              <Link to="/" className="text-white hover:text-blue-400">
-                Book Parcel
-              </Link>
-            )}
-            <a href="#services" className="text-white hover:text-blue-400">
-              Services
-            </a>
-            <a href="#contact" className="text-white hover:text-blue-400">
-              Contact
-            </a>
-            {!isLogin ? (
-              <a
-                className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded"
-                onClick={() => setIsModalOpen(true)}
-              >
-                Login
-              </a>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <div>
-                  <Avatar
-                    name={userDetails?.name || "User"}
-                    size="30"
-                    round={true}
-                    className="cursor-pointer"
-                    onClick={() => setProfileModalOpen(true)}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-white"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <Menu className="hidden" />
-            ) : (
-              <Menu className="h-8 w-8" />
-            )}
-          </button>
-        </nav>
-
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold text-primary mb-4 overflow-hidden   md:whitespace-nowrap  max-w-full animate-typing">
             Your Trusted Logistics Partner
           </h1>
-          <p className="text-xl text-white mb-6 max-w-2xl">
+
+          <p className="text-xl text-primary mb-6 max-w-2xl">
             Delivering excellence across India with speed, reliability, and
             precision.
           </p>
           {isLogin && userDetails && (
-            <p className="text-2xl text-white font-bold ">
+            <p className="text-2xl text-primary font-bold ">
               Welcome , {userDetails.name}👋
             </p>
           )}
           {isLogin && userDetails?.role === "Admin" ? (
             <a
-              href="#booking"
-              className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
+              href="#AdminReports"
+              className="bg-button text-primary px-8 py-3 rounded-full hover:black transition duration-300 flex items-center justify-center mt-6"
             >
               Go to Dashboard{" "}
-              <Package className="h-5 w-5 text-white ml-1 font-bold" />
+              <FiPackage className="h-5 w-5 text-white ml-1 font-bold" />
             </a>
           ) : (
             <a
               href="#booking"
-              className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center mt-6"
+              className="bg-button text-primary px-8 py-3 rounded-full hover:bg-black transition duration-300 flex items-center justify-center mt-6"
             >
               Book Parcel{" "}
-              <Package className="h-5 w-5 text-white ml-1 font-bold" />
+              <FiPackage className="h-5 w-5 text-white ml-1 font-bold " />
             </a>
           )}
         </div>
@@ -298,13 +310,16 @@ const Hero = () => {
         <div className="absolute top-0 left-0 w-full bg-black bg-opacity-50 md:hidden z-50 ">
           <div className="flex flex-col items-center py-6">
             <button
-              className="absolute top-4 right-4 text-gray-400 "
+              className="absolute top-4 right-4 text-primary "
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <X className="h-8 w-8" />
+              <FiX className="h-8 w-8" />
             </button>
             {userDetails?.role === "Admin" ? (
-              <a href="#booking" className="text-white hover:text-blue-400">
+              <a
+                href="#AdminReports"
+                className="text-white hover:text-blue-400"
+              >
                 Admin Reports
               </a>
             ) : userDetails?.role === "Customer" ? (
@@ -327,7 +342,7 @@ const Hero = () => {
             </a>
             {!isLogin ? (
               <a
-                className="text-white hover:bg-blue-600 cursor-pointer bg-blue-400 px-3 py-0.5 rounded mt-4"
+                className="text-black hover:bg-gray-300 cursor-pointer bg-primary px-3 py-0.5 rounded mt-4"
                 onClick={() => setIsModalOpen(true)}
               >
                 Login
@@ -339,7 +354,8 @@ const Hero = () => {
                     name={userDetails?.name || "User"}
                     size="30"
                     round={true}
-                    className="cursor-pointer"
+                    className="cursor-pointer bg-[#ADBBC2] text-white"
+                    color="#ADBBC2"
                     onClick={() => setProfileModalOpen(true)}
                   />
                 </div>
@@ -355,10 +371,10 @@ const Hero = () => {
           <div className="bg-white p-8 rounded-lg w-96">
             <div className="flex items-center">
               <button
-                className="ml-auto text-gray-400"
+                className="ml-auto text-button"
                 onClick={() => setIsModalOpen(false)}
               >
-                <X className="h-6 w-6" />
+                <FiX className="h-6 w-6" />
               </button>
             </div>
             <h2 className="text-2xl text-center font-bold mb-4">Login</h2>
@@ -378,7 +394,7 @@ const Hero = () => {
             />
             <button
               onClick={handleLogin}
-              className="w-full py-2 bg-blue-600 text-white rounded"
+              className="w-full py-2 bg-button hover:bg-black text-white rounded"
             >
               Login
             </button>
@@ -403,10 +419,10 @@ const Hero = () => {
           <div className="bg-white p-8 rounded-lg w-96">
             <div className="flex items-center">
               <button
-                className="ml-auto text-gray-400"
+                className="ml-auto text-button"
                 onClick={() => setRegisterModalOpen(false)}
               >
-                <X className="h-6 w-6" />
+                <FiX className="h-6 w-6" />
               </button>
             </div>
             <h2 className="text-2xl text-center font-bold mb-4">Register</h2>
@@ -467,7 +483,7 @@ const Hero = () => {
               onClick={handleRegister}
               className="w-full py-2 text-white rounded"
               style={{
-                backgroundColor: RequestButton ? "gray" : "blue",
+                backgroundColor: RequestButton ? "gray" : "button",
                 cursor: RequestButton ? "not-allowed" : "pointer",
               }}
               disabled={RequestButton}
@@ -493,12 +509,12 @@ const Hero = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
             <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              className="absolute top-2 right-2 text-button hover:text-gray-600"
               onClick={() => setProfileModalOpen(false)} // Close modal
             >
-              <X className="h-6 w-6" />
+              <FiX className="h-6 w-6" />
             </button>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center  text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
+            <h3 className="text-2xl font-bold text-black mb-4 text-center ">
               User Profile
             </h3>
             <div className="flex justify-center items-center mb-4">
@@ -507,6 +523,7 @@ const Hero = () => {
                 size="60"
                 round={true}
                 className="cursor-pointer"
+                color="#ADBBC2"
                 onClick={() => setProfileModalOpen(true)}
               />
             </div>
@@ -520,10 +537,10 @@ const Hero = () => {
             </div>
             <div>
               <button
-                className="w-full bg-blue-500 text-white px-4 py-2 mt-3 rounded hover:bg-blue-600 transition duration-300 flex items-center justify-center"
+                className="w-full bg-button text-white px-4 py-2 mt-3 rounded hover:bg-black transition duration-300 flex items-center justify-center"
                 onClick={handleLogout}
               >
-                <LogOut className="h-5 w-5 mr-2" />
+                <FiLogOut className="h-5 w-5 mr-2" />
                 Logout
               </button>
             </div>

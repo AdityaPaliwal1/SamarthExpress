@@ -1,45 +1,86 @@
-import React from 'react';
-import { Truck, Package, Globe, Shield, BarChart3, Users, Clock ,} from "lucide-react";
+import React from "react";
+import { easeIn, motion } from "framer-motion";
+import Truck from "../../truck.png";
+import Warehouse from "../../warehouse (2).jpg";
+import Delivery from "../../express.png";
+import { FiBarChart, FiClock, FiShield, FiUsers } from "react-icons/fi";
 
 const Services = () => {
-    return (
-        <>
-        <section id="services" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-16">Our Services</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <Truck className="h-12 w-12 text-blue-600" />,
-                title: "Road Transportation",
-                description:
-                  "Nationwide coverage with our modern fleet of trucks",
-              },
-              {
-                icon: <Package className="h-12 w-12 text-blue-600" />,
-                title: "Warehousing",
-                description: "Secure storage solutions across major cities",
-              },
-              {
-                icon: <Globe className="h-12 w-12 text-blue-600" />,
-                title: "Express Delivery",
-                description:
-                  "Time-sensitive deliveries with real-time tracking",
-              },
-            ].map((service, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 p-6 rounded-lg shadow-lg text-center"
-              >
-                <div className="flex justify-center mb-4">{service.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
-                <p className="text-gray-600">{service.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+  const animations = {
+    div: {
+      initial: {
+        y: "70%",
+        opacity: 0,
+      },
+      whileInView: {
+        y: "0",
+        opacity: 1,
+      },
+      transition: {
+        duration: 0.5,
+        easeIn,
+      },
+    },
+  };
 
+  return (
+    <>
+      <section id="services" className="py-20 bg-white">
+        <motion.div {...animations.div}>
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center text-tabColor mb-16">
+              Our Services
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8 place-items-center ">
+              {[
+                {
+                  img: Truck,
+                  title: "Road Transportation",
+                  description:
+                    "Nationwide coverage with our modern fleet of trucks",
+                },
+                {
+                  img: Warehouse,
+                  title: "Warehousing",
+                  description: "Secure storage solutions across major cities",
+                },
+                {
+                  img: Delivery,
+                  title: "Express Delivery",
+                  description:
+                    "Time-sensitive deliveries with real-time tracking",
+                },
+              ].map((service, index) => (
+                <div
+                  key={index}
+                  className=" p-7 max-h-45 rounded-lg shadow-lg text-center relative w-[300px] h-[320px] rounded-[14px]  overflow-hidden flex flex-col items-center justify-center shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] "
+                >
+                  <div className="bg">
+                    <div className="text-gray-50">
+                      <img
+                        src={service.img}
+                        alt={service.title}
+                        className={
+                          index == 0
+                            ? "h-25 w-45 mx-auto mb-10"
+                            : index == 2
+                            ? "h-25 w-45 mx-auto"
+                            : "h-25 w-45 mx-auto mb-6 "
+                        }
+                      />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">
+                      {service.title}
+                    </h3>
+                    <p className="text-gray-600">{service.description}</p>
+                  </div>
+                  <div className="blob"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </section>
 
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
@@ -49,22 +90,22 @@ const Services = () => {
           <div className="grid md:grid-cols-4 gap-8">
             {[
               {
-                icon: <Shield className="h-8 w-8 text-blue-600" />,
+                icon: <FiShield className="h-8 w-8 text-iconColor" />,
                 title: "Reliable",
                 description: "99.9% on-time delivery",
               },
               {
-                icon: <BarChart3 className="h-8 w-8 text-blue-600" />,
+                icon: <FiBarChart className="h-8 w-8 text-iconColor" />,
                 title: "Efficient",
                 description: "Optimized routes & costs",
               },
               {
-                icon: <Users className="h-8 w-8 text-blue-600" />,
+                icon: <FiUsers className="h-8 w-8 text-iconColor" />,
                 title: "Expert Team",
                 description: "Experienced professionals",
               },
               {
-                icon: <Clock className="h-8 w-8 text-blue-600" />,
+                icon: <FiClock className="h-8 w-8 text-iconColor" />,
                 title: "24/7 Support",
                 description: "Always here to help",
               },
@@ -78,8 +119,8 @@ const Services = () => {
           </div>
         </div>
       </section>
-        </>
-    )
-}
+    </>
+  );
+};
 
 export default Services;

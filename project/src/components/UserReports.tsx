@@ -106,12 +106,12 @@ const UserReports = () => {
         </span>
         /user-report
       </p>
-      <h2 className="text-2xl text-center font-bold my-4 text-blue-400">
+      <h2 className="text-2xl text-center font-bold my-4 text-tabColor">
         YOUR PARCEL RECORDS
       </h2>
       <button
         onClick={downloadExcel}
-        className="mb-4 p-2 bg-blue-500 text-white rounded"
+        className="mb-4 p-2 bg-button text-white rounded"
       >
         Download Excel
       </button>
@@ -123,7 +123,7 @@ const UserReports = () => {
       />
       <div className="flex items-center">
         <FiRefreshCcw
-          className="ml-auto mb-2 text-gray-400 cursor-pointer"
+          className="ml-auto mb-2 text-iconColor cursor-pointer"
           onClick={handleRefreshPage}
         />
       </div>
@@ -192,7 +192,7 @@ const UserReports = () => {
         </span>
         <button
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, npage))}
-          disabled={currentPage === npage}
+          disabled={currentPage === npage || currentItems.length === 0}
           className="p-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
         >
           Next
